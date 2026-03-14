@@ -1,13 +1,27 @@
+import { useNavigate } from "react-router";
 import type { Route } from "./+types/home";
-import { Welcome } from "../welcome/welcome";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "New React Router App" },
-    { name: "description", content: "Welcome to React Router!" },
+    { title: "アイスクリームゲーム" },
+    {
+      name: "description",
+      content: "アルゴリズムを組んでアイスを手に入れよう！",
+    },
   ];
 }
 
 export default function Home() {
-  return <Welcome />;
+  const navigate = useNavigate();
+  return (
+    <div className="w-full h-full bg-amber-100">
+      <h1 className="text-center">アイスクリームゲーム</h1>
+      <button
+        className="bg-orange-400"
+        onClick={() => navigate("/select-stage")}
+      >
+        スタート
+      </button>
+    </div>
+  );
 }
