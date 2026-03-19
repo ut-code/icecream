@@ -1,0 +1,42 @@
+export const bubbles = [
+	{
+		color: "#fbb6ce",
+		size: 300,
+		top: "10%",
+		left: "10%",
+		duration: "10s",
+		delay: "0s",
+	},
+	{
+		color: "#a7f3d0",
+		size: 250,
+		top: "60%",
+		left: "70%",
+		duration: "12s",
+		delay: "2s",
+	},
+	{
+		color: "#bfdbfe",
+		size: 280,
+		top: "30%",
+		left: "80%",
+		duration: "9s",
+		delay: "1s",
+	},
+	{
+		color: "#fde68a",
+		size: 220,
+		top: "70%",
+		left: "20%",
+		duration: "11s",
+		delay: "3s",
+	},
+	{
+		color: "#ddd6fe",
+		size: 200,
+		top: "5%",
+		left: "50%",
+		duration: "13s",
+		delay: "0.5s",
+	},
+];

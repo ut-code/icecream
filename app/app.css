@@ -70,3 +70,31 @@ body {
 .pixel-btn-secondary {
   background: #b8e6b8;
 }
+
+/* Round pixel-style stage button */
+.stage-btn {
+  font-family: "DotGothic16", monospace;
+  font-size: 1.5rem;
+  width: 5rem;
+  height: 5rem;
+  border-radius: 50%;
+  border: 4px solid #333;
+  background: #ffb347;
+  color: #333;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.1s, box-shadow 0.1s;
+  box-shadow: 3px 3px 0 #333;
+  font-weight: bold;
+}
+
+.stage-btn:hover {
+  transform: scale(1.1);
+}
+
+.stage-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: 2px 2px 0 #333;
+}
