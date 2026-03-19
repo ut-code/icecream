@@ -128,8 +128,7 @@ export default function SelectStage() {
 			<div className="relative z-10 mt-6 w-full px-4">
 				<button
 					type="button"
-					className="pixel-btn"
-					style={{ padding: "0.4rem 1rem", fontSize: "0.9rem" }}
+					className="pixel-btn pixel-btn-small"
 					onClick={() => navigate("/")}
 				>
 					← もどる
