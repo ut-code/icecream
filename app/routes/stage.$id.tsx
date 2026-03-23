@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import type { ConeColor, Flavor } from "~/stages";
 import { STAGES } from "~/stages";
 import type { Route } from "./+types/stage.$id";
+import { icemake, type ComponentGraphNode } from "~/lib/icemake";
 
 function checkClear(
 	mission: Partial<Record<ConeColor, Flavor[]>>,
@@ -29,9 +30,18 @@ export default function Stage({ params }: Route.ComponentProps) {
 	const [isClear, setIsClear] = useState(false);
 	const [failMessage, setFailMessage] = useState("");
 
+	const firstComponentId = 3;
+	const components: Record<number, ComponentGraphNode> = {
+		0: { coord: { x: 1, y: 1 }, childrenIds: 4 },
+		1: { coord: { x: 2, y: 1 }, childrenIds: null },
+		2: { coord: { x: 1, y: 2 }, childrenIds: 0 },
+		3: { coord: { x: 0, y: 0 }, childrenIds: { true: 0, false: 2 } },
+		4: { coord: { x: 2, y: 2 }, childrenIds: { true: 1, false: null } },
+	};
+
 	const handleExecute = () => {
-		// Mock: return mission as-is (will be replaced by real algorithm)
-		const result = stageData.mission;
+		const colors = Object.keys(stageData.mission) as ConeColor[];
+		const result = icemake(colors, id, components, firstComponentId);
 		if (checkClear(stageData.mission, result)) {
 			setIsClear(true);
 			setFailMessage("");
@@ -48,6 +58,21 @@ export default function Stage({ params }: Route.ComponentProps) {
 		setFailMessage("");
 		navigate(path);
 	};
+
+  if (!stageData) {
+    return (
+      <div className="w-full h-full bg-amber-100">
+        <button
+          className="bg-orange-400"
+          onClick={() => navigate("/select-stage")}
+        >
+          ←もどる
+        </button>
+        <div>ステージが見つかりませんでした: {id}</div>
+      </div>
+    );
+  }
+
 
 	return (
 		<div className="w-full h-full bg-amber-100 relative">
