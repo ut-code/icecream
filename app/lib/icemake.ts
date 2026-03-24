@@ -68,8 +68,6 @@ function runGraphExecution(
           stack.pop();
         }
         break;
-      case "back":
-        return stack;
       case "if":
         break;
     }

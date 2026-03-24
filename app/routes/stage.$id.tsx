@@ -30,8 +30,8 @@ export default function Stage({ params }: Route.ComponentProps) {
 	const [isClear, setIsClear] = useState(false);
 	const [failMessage, setFailMessage] = useState("");
 
-	const firstComponentId = 3;
-	const components: Record<number, ComponentGraphNode> = {
+	let firstComponentId = 3;
+	let components: Record<number, ComponentGraphNode> = {
 		0: { coord: { x: 1, y: 1 }, childrenIds: 4 },
 		1: { coord: { x: 2, y: 1 }, childrenIds: null },
 		2: { coord: { x: 1, y: 2 }, childrenIds: 0 },
