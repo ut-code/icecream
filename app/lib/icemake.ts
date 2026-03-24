@@ -52,6 +52,7 @@ function runGraphExecution(
     }
     const componentVisited = visited.get(currentId)!;
     if (componentVisited.has(stackKey)) {
+      console.warn(`Infinite loop detected at component ${currentId} with stack state ${stackKey}`);
       // Infinite loop detected: same component with same stack state
       break;
     }
@@ -83,5 +84,6 @@ function runGraphExecution(
     }
   }
 
+  console.log(`Finished execution for color ${color} with final stack:`, stack);
   return stack;
 }
