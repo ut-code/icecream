@@ -1,6 +1,6 @@
-type ConeColor = "red" | "yellow" | "brown";
-type Flavor = "vanilla" | "chocolate" | "strawberry";
-type Component =
+export type ConeColor = "red" | "yellow" | "brown";
+export type Flavor = "vanilla" | "chocolate" | "strawberry";
+export type Component =
   | { type: "push"; flavor: Flavor }
   | { type: "if"; color: ConeColor }
   | { type: "pop"; flavor: Flavor }
@@ -22,7 +22,6 @@ export const STAGES: Record<
       { type: "push", flavor: "vanilla" },
       { type: "push", flavor: "chocolate" },
       { type: "push", flavor: "strawberry" },
-      { type: "if", color: "red" },
       { type: "if", color: "red" },
       { type: "if", color: "red" },
       { type: "pop", flavor: "chocolate" },
