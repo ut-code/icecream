@@ -3,8 +3,7 @@ export type Flavor = "vanilla" | "chocolate" | "strawberry";
 export type Component =
 	| { type: "push"; flavor: Flavor }
 	| { type: "if"; color: ConeColor }
-	| { type: "pop"; flavor: Flavor }
-	| { type: "back" };
+	| { type: "pop"; flavor: Flavor };
 
 export const STAGES: Record<
 	number,
@@ -37,7 +36,6 @@ export const STAGES: Record<
 			{ type: "push", flavor: "vanilla" },
 			{ type: "if", color: "brown" },
 			{ type: "if", color: "brown" },
-			{ type: "back" },
 		],
 	},
 };
