@@ -40,6 +40,9 @@ function runGraphExecution(
   const visited: Map<number, Set<string>> = new Map();
   let currentId: number | null = firstComponentId;
 
+  const coneColors: ConeColor[] = ["red", "yellow", "brown"];
+  const flavors: Flavor[] = ["vanilla", "chocolate", "strawberry"];
+
   while (currentId !== null) {
     const component: Component | undefined = components[currentId];
     const node: ComponentGraphNode | undefined = graph[currentId];
@@ -79,7 +82,26 @@ function runGraphExecution(
     if (typeof children === "number") {
       currentId = children;
     } else {
-      const condition: boolean = component.type === "if" ? color === component.color : false;
+      let condition: boolean = false;
+      if (component.type === "if") {
+        const cond : ConeColor | Flavor | Flavor[] | number = component.condition ;
+        if (typeof cond === "string") {
+          if (coneColors.includes(cond as ConeColor)) {
+            condition = color === cond;
+          } else if (flavors.includes(cond as Flavor)) {
+            condition = stack.length > 0 && stack[stack.length - 1] === cond;
+          }
+        } else if (Array.isArray(cond)) {
+          for (let i = 0; i < stack.length-cond.length+1; i++) {
+            if (stack.slice(i, i + cond.length).every((f, j) => f === cond[j])) {
+              condition = true;
+              break;
+            }
+          }
+        } else if (typeof cond === "number") {
+          condition = stack.length >= cond;
+        }
+      }
       currentId = condition ? children.true : children.false;
     }
   }
