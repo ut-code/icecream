@@ -12,6 +12,7 @@ import {
   useReactFlow,
   type Node,
   type OnConnect,
+  type Edge,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import type { ConeColor, Flavor } from "~/stages";
@@ -20,7 +21,11 @@ import { icemake, type ComponentGraphNode } from "~/lib/icemake";
 let id = 0;
 const getId = () => `node_${id++}`;
 
-type AppNode = Node<{ label: string | React.ReactNode }>;
+type AppNode = Node<{
+  label: string | React.ReactNode;
+  component: Component;
+  componentIndex: number;
+}>;
 
 function checkClear(
   mission: Partial<Record<ConeColor, Flavor[]>>,
@@ -50,9 +55,17 @@ function StageInner({
   const navigate = useNavigate();
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const [nodes, setNodes, onNodesChange] = useNodesState<AppNode>([
-    { id: "start", position: { x: 0, y: 50 }, data: { label: "始点" } },
+    {
+      id: "start",
+      position: { x: 0, y: 50 },
+      data: {
+        label: "始点",
+        component: { type: "start" },
+        componentIndex: -1, // -1 indicates start node
+      },
+    },
   ]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const { screenToFlowPosition } = useReactFlow();
   const [isClear, setIsClear] = useState(false);
   const [failMessage, setFailMessage] = useState("");
@@ -62,8 +75,13 @@ function StageInner({
     [setEdges],
   );
 
-  const onDragStart = (e: React.DragEvent, componentData: string) => {
+  const onDragStart = (
+    e: React.DragEvent,
+    componentData: string,
+    componentIndex: number,
+  ) => {
     e.dataTransfer.setData("application/reactflow", componentData);
+    e.dataTransfer.setData("componentIndex", String(componentIndex));
     e.dataTransfer.effectAllowed = "move";
   };
 
@@ -77,9 +95,11 @@ function StageInner({
       e.preventDefault();
 
       const dataStr = e.dataTransfer.getData("application/reactflow");
+      const indexStr = e.dataTransfer.getData("componentIndex");
       if (!dataStr) return;
 
       const component: Component = JSON.parse(dataStr);
+      const componentIndex = Number(indexStr);
 
       const position = screenToFlowPosition({
         x: e.clientX,
@@ -101,6 +121,8 @@ function StageInner({
               </span>
             </div>
           ),
+          component,
+          componentIndex,
         },
       };
 
@@ -109,15 +131,86 @@ function StageInner({
     [screenToFlowPosition, setNodes],
   );
 
+  const generateComponents = (
+    nodes: AppNode[],
+    edges: Edge[],
+    stageComponents: Component[],
+  ) => {
+    const components: Record<number, ComponentGraphNode> = {};
+
+    for (const node of nodes) {
+      if (node.id === "start") continue;
+
+      const componentIndex = node.data.componentIndex;
+      const component = stageComponents[componentIndex];
+
+      const outgoingEdges = edges.filter((edge) => edge.source === node.id);
+
+      let childrenIds:
+        | number
+        | null
+        | { true: number | null; false: number | null };
+
+      if (component.type === "if") {
+        const trueEdge = outgoingEdges.find(
+          (e) => e.sourceHandle === "true" || !e.sourceHandle,
+        );
+        const falseEdge = outgoingEdges.find((e) => e.sourceHandle === "false");
+
+        const trueTarget = trueEdge
+          ? nodes.find((n) => n.id === trueEdge.target)
+          : null;
+        const falseTarget = falseEdge
+          ? nodes.find((n) => n.id === falseEdge.target)
+          : null;
+
+        childrenIds = {
+          true:
+            trueTarget && trueTarget.id !== "start"
+              ? trueTarget.data.componentIndex
+              : null,
+          false:
+            falseTarget && falseTarget.id !== "start"
+              ? falseTarget.data.componentIndex
+              : null,
+        };
+      } else {
+        if (outgoingEdges.length > 0) {
+          const target = nodes.find((n) => n.id === outgoingEdges[0].target);
+          childrenIds =
+            target && target.id !== "start" ? target.data.componentIndex : null;
+        } else {
+          childrenIds = null;
+        }
+      }
+
+      components[componentIndex] = {
+        coord: { x: node.position.x, y: node.position.y },
+        childrenIds,
+      };
+    }
+
+    console.log(components);
+
+    return components;
+  };
+
   const handleExecute = () => {
-    let firstComponentId = 3;
-    let components: Record<number, ComponentGraphNode> = {
-      0: { coord: { x: 1, y: 1 }, childrenIds: 4 },
-      1: { coord: { x: 2, y: 1 }, childrenIds: null },
-      2: { coord: { x: 1, y: 2 }, childrenIds: 0 },
-      3: { coord: { x: 0, y: 0 }, childrenIds: { true: 0, false: 2 } },
-      4: { coord: { x: 2, y: 2 }, childrenIds: { true: 1, false: null } },
-    };
+    const components = generateComponents(nodes, edges, stageData.components);
+
+    const startEdge = edges.find((e) => e.source === "start");
+    if (!startEdge) {
+      setFailMessage("始点からコンポーネントを接続してください");
+      return;
+    }
+
+    const firstNode = nodes.find((n) => n.id === startEdge.target);
+    if (!firstNode || firstNode.id === "start") {
+      setFailMessage("始点からの接続が正しくありません");
+      return;
+    }
+
+    const firstComponentId = firstNode.data.componentIndex;
 
     const colors = Object.keys(stageData.mission) as ConeColor[];
     const result = icemake(colors, stageId, components, firstComponentId);
@@ -194,7 +287,9 @@ function StageInner({
             <div
               key={index}
               draggable
-              onDragStart={(e) => onDragStart(e, JSON.stringify(component))}
+              onDragStart={(e) =>
+                onDragStart(e, JSON.stringify(component), index)
+              }
               className="h-24 w-24 shrink-0 bg-white rounded-lg shadow-md flex items-center justify-center relative cursor-grab active:cursor-grabbing hover:bg-orange-50 transition-colors border-2 border-transparent hover:border-orange-300"
             >
               {src ? (

@@ -1,6 +1,7 @@
 export type ConeColor = "red" | "yellow" | "brown";
 export type Flavor = "vanilla" | "chocolate" | "strawberry";
 export type Component =
+  | { type: "start" }
   | { type: "push"; flavor: Flavor }
   | { type: "if"; color: ConeColor }
   | { type: "pop"; flavor: Flavor };
