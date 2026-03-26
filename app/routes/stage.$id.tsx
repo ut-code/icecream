@@ -1,7 +1,7 @@
 import { STAGES, type Component } from "~/stages";
 import type { Route } from "./+types/stage.$id";
 import { useNavigate } from "react-router";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -10,7 +10,10 @@ import {
   useEdgesState,
   Controls,
   useReactFlow,
+  Handle,
+  Position,
   type Node,
+  type NodeProps,
   type OnConnect,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
@@ -20,7 +23,113 @@ import { icemake, type ComponentGraphNode } from "~/lib/icemake";
 let id = 0;
 const getId = () => `node_${id++}`;
 
-type AppNode = Node<{ label: string | React.ReactNode }>;
+type AppNode = Node<{ label: string | React.ReactNode; src?: string; overlaySrc?: string }>;
+
+const HANDLE_CLASS = "!w-3 !h-3 !bg-gray-600 !border-2 !border-gray-800";
+
+function getComponentSrc(component: Component): { src: string; overlaySrc?: string } {
+  if (component.type === "push") {
+    return { src: `/push_${component.flavor}.png` };
+  } else if (component.type === "pop") {
+    return { src: `/pop_${component.flavor}.png` };
+  } else if (component.type === "if") {
+    return { src: `/if_true.png`, overlaySrc: `/cone_${component.color}.png` };
+  }
+  return { src: "" };
+}
+
+function StartNode() {
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <div className="bg-gray-800 text-white font-[DotGothic16] text-xs px-3 py-1 rounded border-2 border-gray-900">
+        コーン投入口
+      </div>
+      <Handle type="source" position={Position.Right} />
+    </div>
+  );
+}
+
+function StraightNode({ data }: NodeProps<AppNode>) {
+  return (
+    <div className="flex flex-col items-center">
+      <div className="bg-white rounded-lg shadow-md border-2 border-transparent h-24 w-24 flex items-center justify-center relative">
+        {data.src ? (
+          <img src={data.src} alt="" className="h-16" />
+        ) : (
+          <span className="text-xs font-bold px-2 py-1">{data.label}</span>
+        )}
+        {data.overlaySrc && (
+          <img
+            src={data.overlaySrc}
+            alt=""
+            className="absolute bottom-10 left-2 h-5"
+          />
+        )}
+      </div>
+      <div className="relative w-full flex items-center mt-1">
+        <Handle
+          type="target"
+          position={Position.Left}
+          className={HANDLE_CLASS}
+        />
+        <div className="w-full h-[3px] bg-gray-600 rounded" />
+        <Handle
+          type="source"
+          position={Position.Right}
+          className={HANDLE_CLASS}
+        />
+      </div>
+    </div>
+  );
+}
+
+function SplitNode({ data }: NodeProps<AppNode>) {
+  return (
+    <div className="flex flex-col items-center">
+      <div className="bg-white rounded-lg shadow-md border-2 border-transparent h-24 w-24 flex items-center justify-center relative">
+        {data.src ? (
+          <img src={data.src} alt="" className="h-16" />
+        ) : (
+          <span className="text-xs font-bold px-2 py-1">{data.label}</span>
+        )}
+        {data.overlaySrc && (
+          <img
+            src={data.overlaySrc}
+            alt=""
+            className="absolute bottom-13 left-5 h-5"
+          />
+        )}
+      </div>
+      <svg width="96" height="80" className="mt-1">
+        <line x1="0" y1="40" x2="48" y2="40" stroke="#4b5563" strokeWidth="3" />
+        <line x1="48" y1="40" x2="96" y2="20" stroke="#4b5563" strokeWidth="3" />
+        <line x1="48" y1="40" x2="96" y2="60" stroke="#4b5563" strokeWidth="3" />
+        <text x="80" y="16" className="fill-green-700" fontSize="10" fontFamily="DotGothic16">○</text>
+        <text x="80" y="74" className="fill-red-700" fontSize="10" fontFamily="DotGothic16">×</text>
+      </svg>
+      <Handle
+        type="target"
+        position={Position.Left}
+        className={HANDLE_CLASS}
+        style={{ top: "calc(100% - 40px)" }}
+      />
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="true"
+        className={HANDLE_CLASS}
+        style={{ top: "calc(100% - 60px)" }}
+      />
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="false"
+        className={HANDLE_CLASS}
+        style={{ top: "calc(100% - 20px)" }}
+      />
+    </div>
+  );
+}
 
 function checkClear(
   mission: Partial<Record<ConeColor, Flavor[]>>,
@@ -49,8 +158,9 @@ function StageInner({
 }) {
   const navigate = useNavigate();
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
+  const nodeTypes = useMemo(() => ({ start: StartNode, straight: StraightNode, split: SplitNode }), []);
   const [nodes, setNodes, onNodesChange] = useNodesState<AppNode>([
-    { id: "start", position: { x: 0, y: 50 }, data: { label: "始点" } },
+    { id: "start", type: "start", position: { x: 0, y: 150 }, data: { label: "始点" }, draggable: false },
   ]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const { screenToFlowPosition } = useReactFlow();
@@ -86,21 +196,16 @@ function StageInner({
         y: e.clientY,
       });
 
+      const { src, overlaySrc } = getComponentSrc(component);
+
       const newNode: AppNode = {
         id: getId(),
-        type: "default",
+        type: component.type === "if" ? "split" : "straight",
         position,
         data: {
-          label: (
-            <div className="flex flex-col items-center">
-              <span className="font-bold text-xs">
-                {component.type.toUpperCase()}
-              </span>
-              <span className="text-[10px]">
-                {(component as any).flavor || (component as any).color || ""}
-              </span>
-            </div>
-          ),
+          label: component.type,
+          src,
+          overlaySrc,
         },
       };
 
@@ -168,12 +273,13 @@ function StageInner({
         <ReactFlow
           nodes={nodes}
           edges={edges}
+          nodeTypes={nodeTypes}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           onDrop={onDrop}
           onDragOver={onDragOver}
-          fitView
+          defaultViewport={{ x: 20, y: 200, zoom: 1 }}
         >
           <Controls />
         </ReactFlow>
@@ -181,14 +287,7 @@ function StageInner({
 
       <div className="bg-amber-50 h-32 flex items-center gap-4 px-4 overflow-x-auto border-t-2 border-orange-200 flex-none">
         {stageData.components.map((component: any, index: number) => {
-          let src = "";
-          if (component.type === "push") {
-            src = `/push_${component.flavor}.png`;
-          } else if (component.type === "pop") {
-            src = `/pop_${component.flavor}.png`;
-          } else if (component.type === "if") {
-            src = `/if_true.png`;
-          }
+          const { src, overlaySrc } = getComponentSrc(component);
 
           return (
             <div
@@ -208,10 +307,10 @@ function StageInner({
                   {component.type}
                 </span>
               )}
-              {component.type === "if" && (
+              {overlaySrc && (
                 <img
-                  src={`/cone_${component.color}.png`}
-                  alt={component.color}
+                  src={overlaySrc}
+                  alt=""
                   className="absolute bottom-14 left-3 h-6 pointer-events-none"
                 />
               )}
