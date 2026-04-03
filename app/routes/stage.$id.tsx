@@ -18,7 +18,7 @@ import {
   type Edge,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import type { ConeColor, Flavor } from "~/stages";
+import type { ConeColor, Flavor, StageData } from "~/stages";
 import { icemake, type ComponentGraphNode } from "~/lib/icemake";
 
 let id = 0;
@@ -201,7 +201,7 @@ function StageInner({
   stageData,
 }: {
   stageId: number;
-  stageData: any;
+  stageData: StageData;
 }) {
   const navigate = useNavigate();
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
@@ -209,6 +209,9 @@ function StageInner({
     () => ({ start: StartNode, straight: StraightNode, split: SplitNode }),
     [],
   );
+  const [remainedComponentIdxs, setRemainedComponentIdxs] = useState<number[]>([
+    ...Array(stageData.components.length).keys(),
+  ]);
   const [nodes, setNodes, onNodesChange] = useNodesState<AppNode>([
     {
       id: "start",
@@ -220,6 +223,7 @@ function StageInner({
         componentIndex: -1, // -1 indicates start node
       },
       draggable: false,
+      deletable: false,
     },
   ]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
@@ -228,8 +232,31 @@ function StageInner({
   const [failMessage, setFailMessage] = useState("");
 
   const onConnect: OnConnect = useCallback(
-    (params) => setEdges((eds) => addEdge(params, eds)),
-    [setEdges],
+    (params) => {
+      setEdges((eds) => {
+        const sourceNode = nodes.find((n) => n.id === params.source);
+        const isSplitNode = sourceNode?.type === "split";
+
+        if (isSplitNode) {
+          return addEdge(
+            params,
+            eds.filter(
+              (e) =>
+                !(
+                  e.source === params.source &&
+                  e.sourceHandle === params.sourceHandle
+                ),
+            ),
+          );
+        } else {
+          return addEdge(
+            params,
+            eds.filter((e) => e.source !== params.source),
+          );
+        }
+      });
+    },
+    [setEdges, nodes],
   );
 
   const onDragStart = (
@@ -258,17 +285,30 @@ function StageInner({
       const component: Component = JSON.parse(dataStr);
       const componentIndex = Number(indexStr);
 
+      setRemainedComponentIdxs((prev) =>
+        prev.filter((i) => i !== componentIndex),
+      );
+
       const position = screenToFlowPosition({
         x: e.clientX,
         y: e.clientY,
       });
+
+      // Center the node on the cursor position
+      const NODE_WIDTH = 96;
+      const NODE_HEIGHT = component.type === "if" ? 176 : 120;
+
+      const centeredPosition = {
+        x: position.x - NODE_WIDTH / 2,
+        y: position.y - NODE_HEIGHT / 2,
+      };
 
       const { src, overlaySrc } = getComponentSrc(component);
 
       const newNode: AppNode = {
         id: getId(),
         type: component.type === "if" ? "split" : "straight",
-        position,
+        position: centeredPosition,
         data: {
           label: component.type,
           src,
@@ -426,7 +466,9 @@ function StageInner({
       </div>
 
       <div className="bg-amber-50 h-32 flex items-center gap-4 px-4 overflow-x-auto border-t-2 border-orange-200 flex-none">
-        {stageData.components.map((component: any, index: number) => {
+        {stageData.components.map((component: Component, index: number) => {
+          if (!remainedComponentIdxs.includes(index)) return;
+
           const { src, overlaySrc } = getComponentSrc(component);
 
           return (

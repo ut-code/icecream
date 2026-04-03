@@ -5,14 +5,12 @@ export type Component =
   | { type: "push"; flavor: Flavor }
   | { type: "if"; condition: ConeColor | Flavor | Flavor[] | number }
   | { type: "pop"; flavor: Flavor };
+export type StageData = {
+  mission: Partial<Record<ConeColor, Flavor[]>>;
+  components: Component[];
+};
 
-export const STAGES: Record<
-  number,
-  {
-    mission: Partial<Record<ConeColor, Flavor[]>>;
-    components: Component[];
-  }
-> = {
+export const STAGES: Record<number, StageData> = {
   1: {
     mission: {
       red: ["vanilla", "chocolate"],
