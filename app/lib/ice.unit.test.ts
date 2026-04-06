@@ -19,7 +19,7 @@ describe("icemake", () => {
 
     for (const color of Object.keys(mission) as Array<keyof typeof mission>) {
       const expected = mission[color] ?? [];
-      const actual = icemake([color], stage, graph, firstComponentId)[color];
+      const actual = icemake([color], stage, graph, firstComponentId).result[color];
       expect(actual).toEqual(expected);
     }
   });
