@@ -6,27 +6,51 @@ export type ComponentGraphNode = {
   childrenIds: number | null | { true: number | null; false: number | null };
 };
 
+export type ExecutionStep = {
+  componentIndex: number;
+  stack: Flavor[];
+  branchTaken?: boolean;
+};
+
+export type IcemakeResult = {
+  result: Partial<Record<ConeColor, Flavor[]>>;
+  traces: { color: ConeColor; steps: ExecutionStep[] }[];
+};
+
 export function icemake(
   colors: ConeColor[],
   stage: number,
   graph?: Record<number, ComponentGraphNode>,
   firstComponentId?: number,
-): Partial<Record<ConeColor, Flavor[]>> {
+): IcemakeResult {
   const stageData = STAGES[stage];
-  if (!stageData) return {};
+  if (!stageData) return { result: {}, traces: [] };
 
   if (graph && firstComponentId !== undefined) {
-    return Object.fromEntries(
-      colors.map((color) => [
+    const traces = colors.map((color) => {
+      const steps = runGraphExecution(
+        stageData.components,
         color,
-        runGraphExecution(stageData.components, color, graph, firstComponentId),
+        graph,
+        firstComponentId,
+      );
+      return { color, steps };
+    });
+    const result = Object.fromEntries(
+      traces.map(({ color, steps }) => [
+        color,
+        steps.length > 0 ? steps[steps.length - 1].stack : [],
       ]),
     );
+    return { result, traces };
   }
 
-  return Object.fromEntries(
-    colors.map((color) => [color, stageData.mission[color] ?? []]),
-  );
+  return {
+    result: Object.fromEntries(
+      colors.map((color) => [color, stageData.mission[color] ?? []]),
+    ),
+    traces: [],
+  };
 }
 
 function runGraphExecution(
@@ -34,9 +58,9 @@ function runGraphExecution(
   color: ConeColor,
   graph: Record<number, ComponentGraphNode>,
   firstComponentId: number,
-): Flavor[] {
+): ExecutionStep[] {
   const stack: Flavor[] = [];
-  // Map<componentId, Set<stackStringRepresentation>>
+  const steps: ExecutionStep[] = [];
   const visited: Map<number, Set<string>> = new Map();
   let currentId: number | null = firstComponentId;
 
@@ -48,51 +72,37 @@ function runGraphExecution(
     const node: ComponentGraphNode | undefined = graph[currentId];
     if (!component || !node) break;
 
-    // Check if we've visited this component with this exact stack state
     const stackKey = JSON.stringify(stack);
-    if (!visited.has(currentId)) {
-      visited.set(currentId, new Set());
-    }
-    const componentVisited = visited.get(currentId)!;
-    if (componentVisited.has(stackKey)) {
-      console.warn(`Infinite loop detected at component ${currentId} with stack state ${stackKey}`);
-      // Infinite loop detected: same component with same stack state
-      break;
-    }
+    if (!visited.has(currentId)) visited.set(currentId, new Set());
+    const componentVisited = visited.get(currentId);
+    if (!componentVisited || componentVisited.has(stackKey)) break;
     componentVisited.add(stackKey);
 
     switch (component.type) {
       case "push":
-        if (stack.length < 5) {
-          stack.push(component.flavor);
-        }
+        if (stack.length < 5) stack.push(component.flavor);
         break;
       case "pop":
-        if (stack.length > 0 && stack[stack.length - 1] === component.flavor) {
+        if (stack.length > 0 && stack[stack.length - 1] === component.flavor)
           stack.pop();
-        }
         break;
       case "if":
         break;
     }
 
     const children: ComponentGraphNode["childrenIds"] = node.childrenIds;
-    if (children == null) break;
 
-    if (typeof children === "number") {
-      currentId = children;
-    } else {
-      let condition: boolean = false;
+    let branchTaken: boolean | undefined;
+    if (children != null && typeof children !== "number") {
+      let condition = false;
       if (component.type === "if") {
-        const cond : ConeColor | Flavor | Flavor[] | number = component.condition ;
+        const cond: ConeColor | Flavor | Flavor[] | number = component.condition;
         if (typeof cond === "string") {
-          if (coneColors.includes(cond as ConeColor)) {
-            condition = color === cond;
-          } else if (flavors.includes(cond as Flavor)) {
+          if (coneColors.includes(cond as ConeColor)) condition = color === cond;
+          else if (flavors.includes(cond as Flavor))
             condition = stack.length > 0 && stack[stack.length - 1] === cond;
-          }
         } else if (Array.isArray(cond)) {
-          for (let i = 0; i < stack.length-cond.length+1; i++) {
+          for (let i = 0; i <= stack.length - cond.length; i++) {
             if (stack.slice(i, i + cond.length).every((f, j) => f === cond[j])) {
               condition = true;
               break;
@@ -102,10 +112,19 @@ function runGraphExecution(
           condition = stack.length >= cond;
         }
       }
-      currentId = condition ? children.true : children.false;
+      branchTaken = condition;
+    }
+
+    steps.push({ componentIndex: currentId, stack: [...stack], branchTaken });
+
+    if (children == null) break;
+
+    if (typeof children === "number") {
+      currentId = children;
+    } else {
+      currentId = branchTaken ? children.true : children.false;
     }
   }
 
-  console.log(`Finished execution for color ${color} with final stack:`, stack);
-  return stack;
+  return steps;
 }
