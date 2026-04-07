@@ -33,29 +33,61 @@ type AppNode = Node<{
   label: string | React.ReactNode;
   src?: string;
   overlaySrc?: string;
+  overlaySrcs?: string[];
+  overlayNumber?: number;
   component: Component;
   componentIndex: number;
 }>;
 
-const HANDLE_CLASS = "!w-3 !h-3 !bg-gray-600 !border-2 !border-gray-800";
+const HANDLE_CLASS = "!w-3 !h-3 !bg-gray-500 !border-2 !border-gray-800";
 
-function getComponentSrc(component: Component): {
+function getComponentSrc(
+  component: Component,
+  branchTaken?: boolean,
+): {
   src: string;
   overlaySrc?: string;
+  overlaySrcs?: string[];
+  overlayNumber?: number;
 } {
   if (component.type === "push") {
     return { src: `/push_${component.flavor}.png` };
   } else if (component.type === "pop") {
     return { src: `/pop_${component.flavor}.png` };
   } else if (component.type === "if") {
-    // コーン以外にも対応させる
     const condition = component.condition;
-    const coneColor =
+
+    // Determine base image based on branchTaken
+    const baseSrc =
+      branchTaken === true
+        ? `/if_true.png`
+        : branchTaken === false
+          ? `/if_false.png`
+          : `/if_true.png`;
+
+    // ConeColor
+    if (
       typeof condition === "string" &&
       ["red", "yellow", "brown"].includes(condition)
-        ? condition
-        : "red"; // default fallback
-    return { src: `/if_true.png`, overlaySrc: `/cone_${coneColor}.png` };
+    ) {
+      return { src: baseSrc, overlaySrc: `/cone_${condition}.png` };
+    }
+    // Flavor
+    if (
+      typeof condition === "string" &&
+      ["vanilla", "chocolate", "strawberry"].includes(condition)
+    ) {
+      return { src: baseSrc, overlaySrc: `/ice_${condition}.png` };
+    }
+    // Flavor[]
+    if (Array.isArray(condition)) {
+      const overlayImages = condition.map((flavor) => `/ice_${flavor}.png`);
+      return { src: baseSrc, overlaySrcs: overlayImages };
+    }
+    // number
+    if (typeof condition === "number") {
+      return { src: baseSrc, overlayNumber: condition };
+    }
   }
   return { src: "" };
 }
@@ -74,7 +106,7 @@ function StartNode() {
 function StraightNode({ data }: NodeProps<AppNode>) {
   return (
     <div className="flex flex-col items-center">
-      <div className="bg-white rounded-lg shadow-md border-2 border-transparent h-24 w-24 flex items-center justify-center relative">
+      <div className="bg-amber-100 rounded-sm border border-amber-500 h-24 w-24 flex items-center justify-center relative">
         {data.src ? (
           <img src={data.src} alt="" className="h-16" />
         ) : (
@@ -94,7 +126,7 @@ function StraightNode({ data }: NodeProps<AppNode>) {
           position={Position.Left}
           className={HANDLE_CLASS}
         />
-        <div className="w-full h-0.75 bg-gray-600 rounded" />
+        <div className="w-full h-3 bg-gray-700 rounded border-2 border-gray-800" />
         <Handle
           type="source"
           position={Position.Right}
@@ -108,9 +140,9 @@ function StraightNode({ data }: NodeProps<AppNode>) {
 function SplitNode({ data }: NodeProps<AppNode>) {
   return (
     <div className="flex flex-col items-center">
-      <div className="bg-white rounded-lg shadow-md border-2 border-transparent h-24 w-24 flex items-center justify-center relative">
+      <div className="bg-amber-100 rounded-sm border border-amber-500 h-36 w-36 flex items-center justify-center relative">
         {data.src ? (
-          <img src={data.src} alt="" className="h-16" />
+          <img src={data.src} alt="" className="h-30" />
         ) : (
           <span className="text-xs font-bold px-2 py-1">{data.label}</span>
         )}
@@ -118,30 +150,53 @@ function SplitNode({ data }: NodeProps<AppNode>) {
           <img
             src={data.overlaySrc}
             alt=""
-            className="absolute bottom-13 left-5 h-5"
+            className="absolute bottom-24 left-15 h-6"
           />
         )}
+        {data.overlaySrcs && (
+          <div className="absolute bottom-23 left-15 flex flex-col-reverse">
+            {data.overlaySrcs.map((src, i) => (
+              <img key={i} src={src} alt="" className="h-5 -mb-0.5" />
+            ))}
+          </div>
+        )}
+        {data.overlayNumber !== undefined && (
+          <div className="absolute bottom-23 left-9 font-bold text-base">
+            <span className="text-2xl">{data.overlayNumber}</span>コ
+            <ruby>
+              以上
+              <rt>いじょう</rt>
+            </ruby>
+          </div>
+        )}
       </div>
-      <svg width="96" height="80" className="mt-1">
-        <line x1="0" y1="40" x2="48" y2="40" stroke="#4b5563" strokeWidth="3" />
+      <svg width="144" height="80" className="mt-1">
         <line
-          x1="48"
+          x1="0"
           y1="40"
-          x2="96"
-          y2="20"
-          stroke="#4b5563"
-          strokeWidth="3"
+          x2="72"
+          y2="40"
+          stroke="#1f2937"
+          strokeWidth="12"
         />
         <line
-          x1="48"
+          x1="72"
           y1="40"
-          x2="96"
+          x2="144"
+          y2="20"
+          stroke="#1f2937"
+          strokeWidth="12"
+        />
+        <line
+          x1="72"
+          y1="40"
+          x2="144"
           y2="60"
-          stroke="#4b5563"
-          strokeWidth="3"
+          stroke="#1f2937"
+          strokeWidth="12"
         />
         <text
-          x="80"
+          x="128"
           y="16"
           className="fill-green-700"
           fontSize="10"
@@ -150,7 +205,7 @@ function SplitNode({ data }: NodeProps<AppNode>) {
           ○
         </text>
         <text
-          x="80"
+          x="128"
           y="74"
           className="fill-red-700"
           fontSize="10"
@@ -204,6 +259,9 @@ function checkClear(
 type AnimSegment = {
   stackAfter: Flavor[];
   durationMs: number;
+  componentIndex?: number;
+  branchTaken?: boolean;
+  isNodePause?: boolean;
 } & (
   | { kind: "edge"; pathEl: SVGPathElement; totalLength: number }
   | { kind: "linear"; x1: number; y1: number; x2: number; y2: number }
@@ -326,6 +384,8 @@ function buildFullPath(
     const { pathEl, totalLength } = edgePaths[i];
     const prevStack = i > 0 ? trace[i - 1].stack : [];
     const curStack = trace[i].stack;
+    const componentIndex = trace[i].componentIndex;
+    const branchTaken = trace[i].branchTaken;
 
     // 1. Edge segment (old stack — not yet processed)
     segments.push({
@@ -334,6 +394,8 @@ function buildFullPath(
       totalLength,
       stackAfter: prevStack,
       durationMs: lengthMs(totalLength),
+      componentIndex,
+      branchTaken,
     });
 
     const inp = pathEl.getPointAtLength(totalLength);
@@ -386,6 +448,8 @@ function buildFullPath(
       y2: cy,
       stackAfter: prevStack,
       durationMs: distMs(inp.x, inp.y, cx, cy),
+      componentIndex,
+      branchTaken,
     });
 
     // 3. Pause at center (stack updates here)
@@ -397,6 +461,9 @@ function buildFullPath(
       y2: cy,
       stackAfter: curStack,
       durationMs: PAUSE_AT_NODE_MS,
+      componentIndex,
+      branchTaken,
+      isNodePause: true,
     });
 
     // 4. Center → output handle (new stack, diagonal for split nodes)
@@ -408,6 +475,8 @@ function buildFullPath(
       y2: outY,
       stackAfter: curStack,
       durationMs: distMs(cx, cy, outX, outY),
+      componentIndex,
+      branchTaken,
     });
 
     // 5. Terminal pause (last node only)
@@ -420,6 +489,8 @@ function buildFullPath(
         y2: outY,
         stackAfter: curStack,
         durationMs: PAUSE_AT_TERMINAL_MS,
+        componentIndex,
+        branchTaken,
       });
     }
   }
@@ -463,6 +534,9 @@ function StageInner({
   const [failMessage, setFailMessage] = useState("");
   const [isAnimating, setIsAnimating] = useState(false);
   const [flyingCones, setFlyingCones] = useState<FlyingConeRender[]>([]);
+  const [takenBranchMap, setTakenBranchMap] = useState<
+    Map<number, boolean | undefined>
+  >(new Map());
   const animRef = useRef<AnimState | null>(null);
   const rafRef = useRef<number | null>(null);
 
@@ -538,7 +612,8 @@ function StageInner({
         y: position.y - NODE_HEIGHT / 2,
       };
 
-      const { src, overlaySrc } = getComponentSrc(component);
+      const { src, overlaySrc, overlaySrcs, overlayNumber } =
+        getComponentSrc(component);
 
       const newNode: AppNode = {
         id: getId(),
@@ -548,6 +623,8 @@ function StageInner({
           label: component.type,
           src,
           overlaySrc,
+          overlaySrcs,
+          overlayNumber,
           component,
           componentIndex,
         },
@@ -625,6 +702,43 @@ function StageInner({
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
     };
   }, []);
+
+  // Update node images based on activeComponents
+  useEffect(() => {
+    setNodes((nds) =>
+      nds.map((node) => {
+        if (
+          node.data.componentIndex === undefined ||
+          node.data.componentIndex < 0
+        ) {
+          return node;
+        }
+
+        const branchTaken = takenBranchMap.get(node.data.componentIndex);
+        if (branchTaken === undefined && takenBranchMap.size > 0) {
+          return node;
+        }
+
+        const component = node.data.component;
+        if (component.type === "if") {
+          const { src, overlaySrc, overlaySrcs, overlayNumber } =
+            getComponentSrc(component, branchTaken);
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              src,
+              overlaySrc,
+              overlaySrcs,
+              overlayNumber,
+            },
+          };
+        }
+
+        return node;
+      }),
+    );
+  }, [takenBranchMap, setNodes]);
 
   const handleExecute = () => {
     if (isAnimating) return;
@@ -704,6 +818,18 @@ function StageInner({
         const elapsed = timestamp - cone.segmentStartTime;
         const progress = Math.min(elapsed / seg.durationMs, 1);
 
+        // Update image only when state changes during node pause
+        if (seg.isNodePause && seg.componentIndex !== undefined) {
+          const currentState = takenBranchMap.get(seg.componentIndex);
+          if (currentState !== seg.branchTaken) {
+            setTakenBranchMap((prev) => {
+              const next = new Map(prev);
+              next.set(seg.componentIndex!, seg.branchTaken);
+              return next;
+            });
+          }
+        }
+
         let px: number | null = null;
         let py: number | null = null;
 
@@ -750,6 +876,7 @@ function StageInner({
         animRef.current = null;
         setIsAnimating(false);
         setFlyingCones([]);
+        setTakenBranchMap(new Map());
         if (checkClear(stageData.mission, anim.result)) {
           setIsClear(true);
         } else {
@@ -808,7 +935,13 @@ function StageInner({
           onConnect={onConnect}
           onDrop={onDrop}
           onDragOver={onDragOver}
-          defaultEdgeOptions={{ type: "straight" }}
+          defaultEdgeOptions={{
+            type: "straight",
+            style: {
+              strokeWidth: 10,
+              strokeLinecap: "round",
+            },
+          }}
           connectionLineType={ConnectionLineType.Straight}
           defaultViewport={{ x: 20, y: 200, zoom: 1 }}
         >
@@ -826,26 +959,31 @@ function StageInner({
               zIndex: 100,
             }}
           >
-            <div className="flex flex-col items-center">
-              {[...cone.stack].reverse().map((flavor, i) => (
+            <div className="flex flex-col-reverse items-center">
+              <img src={`/cone_${cone.color}.png`} alt="" className="h-10" />
+              {cone.stack.map((flavor, i) => (
                 <img
                   key={i}
                   src={`/ice_${flavor}.png`}
                   alt=""
-                  className="h-8 -mb-1"
+                  className="h-8 -mb-3"
+                  style={{ zIndex: i + 1 }}
                 />
               ))}
-              <img src={`/cone_${cone.color}.png`} alt="" className="h-10" />
             </div>
           </div>
         ))}
       </div>
 
-      <div className="bg-amber-50 h-32 flex items-center gap-4 px-4 overflow-x-auto border-t-2 border-orange-200 flex-none">
+      <div className="bg-amber-50 h-50 flex items-center gap-4 px-4 overflow-x-auto border-t-2 border-orange-200 flex-none">
         {stageData.components.map((component: Component, index: number) => {
           if (!remainedComponentIdxs.includes(index)) return;
 
-          const { src, overlaySrc } = getComponentSrc(component);
+          const { src, overlaySrc, overlaySrcs, overlayNumber } =
+            getComponentSrc(component);
+
+          const hasOverlay =
+            overlaySrc || overlaySrcs || overlayNumber !== undefined;
 
           return (
             <div
@@ -854,13 +992,13 @@ function StageInner({
               onDragStart={(e) =>
                 onDragStart(e, JSON.stringify(component), index)
               }
-              className="h-24 w-24 shrink-0 bg-white rounded-lg shadow-md flex items-center justify-center relative cursor-grab active:cursor-grabbing hover:bg-orange-50 transition-colors border-2 border-transparent hover:border-orange-300"
+              className={`${hasOverlay ? "h-36 w-36" : "h-24 w-24"} shrink-0 bg-white rounded-lg shadow-md flex items-center justify-center relative cursor-grab active:cursor-grabbing hover:bg-orange-50 transition-colors border-2 border-transparent hover:border-orange-300`}
             >
               {src ? (
                 <img
                   src={src}
                   alt={component.type}
-                  className="h-20 pointer-events-none"
+                  className={`${hasOverlay ? "h-30" : "h-20"} pointer-events-none"`}
                 />
               ) : (
                 <span className="text-xs font-bold pointer-events-none">
@@ -871,8 +1009,24 @@ function StageInner({
                 <img
                   src={overlaySrc}
                   alt=""
-                  className="absolute bottom-14 left-3 h-6 pointer-events-none"
+                  className="absolute bottom-24 left-15 h-6 pointer-events-none"
                 />
+              )}
+              {overlaySrcs && (
+                <div className="absolute bottom-23 left-15 flex flex-col-reverse pointer-events-none">
+                  {overlaySrcs.map((imgSrc, i) => (
+                    <img key={i} src={imgSrc} alt="" className="h-5 -mb-0.5" />
+                  ))}
+                </div>
+              )}
+              {overlayNumber !== undefined && (
+                <div className="absolute bottom-23 left-9 font-bold text-base pointer-events-none">
+                  <span className="text-2xl">{overlayNumber}</span>コ
+                  <ruby>
+                    以上
+                    <rt>いじょう</rt>
+                  </ruby>
+                </div>
               )}
             </div>
           );
