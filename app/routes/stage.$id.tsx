@@ -19,8 +19,12 @@ import {
   ConnectionLineType,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import type { ConeColor, Flavor } from "~/stages";
-import { icemake, type ComponentGraphNode, type ExecutionStep } from "~/lib/icemake";
+import type { ConeColor, Flavor, StageData } from "~/stages";
+import {
+  icemake,
+  type ComponentGraphNode,
+  type ExecutionStep,
+} from "~/lib/icemake";
 
 let id = 0;
 const getId = () => `node_${id++}`;
@@ -294,7 +298,10 @@ function buildFullPath(
   if (!startEdge) return [];
   const startPathEl = getEdgePathEl(startEdge.id);
   if (!startPathEl) return [];
-  edgePaths.push({ pathEl: startPathEl, totalLength: startPathEl.getTotalLength() });
+  edgePaths.push({
+    pathEl: startPathEl,
+    totalLength: startPathEl.getTotalLength(),
+  });
 
   for (let i = 1; i < trace.length; i++) {
     const fromNode = nodeByComp.get(trace[i - 1].componentIndex);
@@ -302,7 +309,10 @@ function buildFullPath(
     if (!fromNode || !toNode) break;
 
     const edge = findEdgeByBranch(
-      allEdges, fromNode.id, toNode.id, trace[i - 1].branchTaken,
+      allEdges,
+      fromNode.id,
+      toNode.id,
+      trace[i - 1].branchTaken,
     );
     if (!edge) break;
     const pathEl = getEdgePathEl(edge.id);
@@ -341,11 +351,16 @@ function buildFullPath(
       outY = inp.y;
       const lastNode = nodeByComp.get(trace[i].componentIndex);
       if (lastNode?.type === "split" && trace[i].branchTaken !== undefined) {
-        outY = trace[i].branchTaken ? inp.y - SPLIT_Y_OFFSET : inp.y + SPLIT_Y_OFFSET;
+        outY = trace[i].branchTaken
+          ? inp.y - SPLIT_Y_OFFSET
+          : inp.y + SPLIT_Y_OFFSET;
       }
       if (lastNode) {
         const outEdge = findEdgeByBranch(
-          allEdges, lastNode.id, undefined, trace[i].branchTaken,
+          allEdges,
+          lastNode.id,
+          undefined,
+          trace[i].branchTaken,
         );
         if (outEdge) {
           const outPath = getEdgePathEl(outEdge.id);
@@ -365,7 +380,10 @@ function buildFullPath(
     // 2. Input handle → center (old stack still)
     segments.push({
       kind: "linear",
-      x1: inp.x, y1: inp.y, x2: cx, y2: cy,
+      x1: inp.x,
+      y1: inp.y,
+      x2: cx,
+      y2: cy,
       stackAfter: prevStack,
       durationMs: distMs(inp.x, inp.y, cx, cy),
     });
@@ -373,7 +391,10 @@ function buildFullPath(
     // 3. Pause at center (stack updates here)
     segments.push({
       kind: "linear",
-      x1: cx, y1: cy, x2: cx, y2: cy,
+      x1: cx,
+      y1: cy,
+      x2: cx,
+      y2: cy,
       stackAfter: curStack,
       durationMs: PAUSE_AT_NODE_MS,
     });
@@ -381,7 +402,10 @@ function buildFullPath(
     // 4. Center → output handle (new stack, diagonal for split nodes)
     segments.push({
       kind: "linear",
-      x1: cx, y1: cy, x2: outX, y2: outY,
+      x1: cx,
+      y1: cy,
+      x2: outX,
+      y2: outY,
       stackAfter: curStack,
       durationMs: distMs(cx, cy, outX, outY),
     });
@@ -390,7 +414,10 @@ function buildFullPath(
     if (i === edgePaths.length - 1) {
       segments.push({
         kind: "linear",
-        x1: outX, y1: outY, x2: outX, y2: outY,
+        x1: outX,
+        y1: outY,
+        x2: outX,
+        y2: outY,
         stackAfter: curStack,
         durationMs: PAUSE_AT_TERMINAL_MS,
       });
@@ -405,7 +432,7 @@ function StageInner({
   stageData,
 }: {
   stageId: number;
-  stageData: any;
+  stageData: StageData;
 }) {
   const navigate = useNavigate();
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
@@ -413,6 +440,9 @@ function StageInner({
     () => ({ start: StartNode, straight: StraightNode, split: SplitNode }),
     [],
   );
+  const [remainedComponentIdxs, setRemainedComponentIdxs] = useState<number[]>([
+    ...Array(stageData.components.length).keys(),
+  ]);
   const [nodes, setNodes, onNodesChange] = useNodesState<AppNode>([
     {
       id: "start",
@@ -424,6 +454,7 @@ function StageInner({
         componentIndex: -1,
       },
       draggable: false,
+      deletable: false,
     },
   ]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
@@ -436,8 +467,31 @@ function StageInner({
   const rafRef = useRef<number | null>(null);
 
   const onConnect: OnConnect = useCallback(
-    (params) => setEdges((eds) => addEdge(params, eds)),
-    [setEdges],
+    (params) => {
+      setEdges((eds) => {
+        const sourceNode = nodes.find((n) => n.id === params.source);
+        const isSplitNode = sourceNode?.type === "split";
+
+        if (isSplitNode) {
+          return addEdge(
+            params,
+            eds.filter(
+              (e) =>
+                !(
+                  e.source === params.source &&
+                  e.sourceHandle === params.sourceHandle
+                ),
+            ),
+          );
+        } else {
+          return addEdge(
+            params,
+            eds.filter((e) => e.source !== params.source),
+          );
+        }
+      });
+    },
+    [setEdges, nodes],
   );
 
   const onDragStart = (
@@ -466,17 +520,30 @@ function StageInner({
       const component: Component = JSON.parse(dataStr);
       const componentIndex = Number(indexStr);
 
+      setRemainedComponentIdxs((prev) =>
+        prev.filter((i) => i !== componentIndex),
+      );
+
       const position = screenToFlowPosition({
         x: e.clientX,
         y: e.clientY,
       });
+
+      // Center the node on the cursor position
+      const NODE_WIDTH = 96;
+      const NODE_HEIGHT = component.type === "if" ? 176 : 120;
+
+      const centeredPosition = {
+        x: position.x - NODE_WIDTH / 2,
+        y: position.y - NODE_HEIGHT / 2,
+      };
 
       const { src, overlaySrc } = getComponentSrc(component);
 
       const newNode: AppNode = {
         id: getId(),
         type: component.type === "if" ? "split" : "straight",
-        position,
+        position: centeredPosition,
         data: {
           label: component.type,
           src,
@@ -578,7 +645,12 @@ function StageInner({
 
     const firstComponentId = firstNode.data.componentIndex;
     const colors = Object.keys(stageData.mission) as ConeColor[];
-    const { result, traces } = icemake(colors, stageId, components, firstComponentId);
+    const { result, traces } = icemake(
+      colors,
+      stageId,
+      components,
+      firstComponentId,
+    );
 
     const spawnQueue = traces.map(({ color, steps }) => ({
       color,
@@ -636,9 +708,7 @@ function StageInner({
         let py: number | null = null;
 
         if (seg.kind === "edge") {
-          const pt = seg.pathEl.getPointAtLength(
-            progress * seg.totalLength,
-          );
+          const pt = seg.pathEl.getPointAtLength(progress * seg.totalLength);
           px = pt.x;
           py = pt.y;
         } else {
@@ -772,7 +842,9 @@ function StageInner({
       </div>
 
       <div className="bg-amber-50 h-32 flex items-center gap-4 px-4 overflow-x-auto border-t-2 border-orange-200 flex-none">
-        {stageData.components.map((component: any, index: number) => {
+        {stageData.components.map((component: Component, index: number) => {
+          if (!remainedComponentIdxs.includes(index)) return;
+
           const { src, overlaySrc } = getComponentSrc(component);
 
           return (
