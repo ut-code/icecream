@@ -33,7 +33,7 @@ function renderIceCream(spec: IceCreamSpec, index: number) {
       <img
         src={coneImage[spec.cone]}
         alt={`Cone ${spec.cone}`}
-        className="w-14 h-14"
+        className="w-14 h-auto"
       />
       {spec.scoops.map((flavor, scoopIndex) => (
         <img
@@ -49,15 +49,11 @@ function renderIceCream(spec: IceCreamSpec, index: number) {
 }
 
 const iceCreams : IceCreamSpec[] = [
-  { x: "calc(50% + 270px)", y: "40%", cone: "red", scoops: ["vanilla","strawberry", "chocolate"] },
-  { x: "calc(50% - 330px)", y: "40%", cone: "yellow", scoops: ["vanilla","chocolate", "strawberry"] },
-  { x: "calc(50% + 130px)", y: "65%", cone: "yellow", scoops: ["chocolate","vanilla", "strawberry"] },
-  { x: "calc(50% - 190px)", y: "65%", cone: "brown", scoops: ["strawberry","chocolate", "vanilla"] },
-  { x: "24px", y: "calc(100% - 72px)", cone: "red", scoops: ["vanilla", "chocolate", "chocolate","strawberry", "strawberry"] },
-  { x: "25%", y: "calc(100% - 72px)", cone: "brown", scoops: ["strawberry", "vanilla", "chocolate"] },
-  { x: "50%", y: "calc(100% - 72px)", cone: "yellow", scoops: ["chocolate"] },
-  { x: "75%", y: "calc(100% - 72px)", cone: "red", scoops: ["chocolate", "strawberry", "vanilla"] },
-  { x: "calc(100% - 72px)", y: "calc(100% - 72px)", cone: "brown", scoops: ["strawberry", "strawberry", "chocolate", "vanilla", "strawberry"] },
+  { x: "24px", y: "calc(100% - 100px)", cone: "red", scoops: ["vanilla", "chocolate", "chocolate","strawberry", "strawberry"] },
+  { x: "25%", y: "calc(100% - 100px)", cone: "brown", scoops: ["strawberry", "vanilla", "chocolate"] },
+  { x: "50%", y: "calc(100% - 100px)", cone: "yellow", scoops: ["chocolate"] },
+  { x: "75%", y: "calc(100% - 100px)", cone: "red", scoops: ["chocolate", "strawberry", "vanilla"] },
+  { x: "calc(100% - 100px)", y: "calc(100% - 100px)", cone: "brown", scoops: ["strawberry", "strawberry", "chocolate", "vanilla", "strawberry"] },
 ];
 
 export function meta({}: Route.MetaArgs) {
