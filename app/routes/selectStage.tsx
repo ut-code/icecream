@@ -99,6 +99,65 @@ const pathD = (() => {
 
 const contentHeight = stagePositions[TOTAL_STAGES - 1].y + 80;
 
+const personDecorations = [
+  {
+    src: "/if_false.png",
+    alt: "If False Character",
+    top: "50rem",
+    right: "4rem",
+    width: 76,
+  },
+  {
+    src: "/if_true.png",
+    alt: "If True Character",
+    top: "49%",
+    left: "16rem",
+    width: 76,
+  },
+  {
+    src: "/pop_vanilla.png",
+    alt: "Pop Vanilla Character",
+    top: "37rem",
+    left: "30rem",
+    width: 64,
+  },
+  {
+    src: "/pop_strawberry.png",
+    alt: "Pop Strawberry Character",
+    top: "14rem",
+    right: "4rem",
+    width: 64,
+  },
+  {
+    src: "/pop_chocolate.png",
+    alt: "Pop Chocolate Character",
+    bottom: "27rem",
+    left: "35%",
+    width: 64,
+  },
+  {
+    src: "/push_vanilla.png",
+    alt: "Push Vanilla Character",
+    top: "25rem",
+    left: "22rem",
+    width: 72,
+  },
+  {
+    src: "/push_strawberry.png",
+    alt: "Push Strawberry Character",
+    bottom: "45rem",
+    left: "45%",
+    width: 72,
+  },
+  {
+    src: "/push_chocolate.png",
+    alt: "Push Chocolate Character",
+    bottom: "37rem",
+    right: "5rem",
+    width: 64,
+  },
+];
+
 export default function SelectStage() {
   const navigate = useNavigate();
 
@@ -121,6 +180,21 @@ export default function SelectStage() {
               "--delay": b.delay,
             } as React.CSSProperties
           }
+        />
+      ))}
+      {personDecorations.map((decor, index) => (
+        <img
+          key={`person-decor-${index}`}
+          src={decor.src}
+          alt={decor.alt}
+          className="pointer-events-none absolute z-0 opacity-90"
+          style={{
+            width: decor.width,
+            top: decor.top,
+            left: decor.left,
+            right: decor.right,
+            bottom: decor.bottom,
+          }}
         />
       ))}
 

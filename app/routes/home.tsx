@@ -2,6 +2,60 @@ import { useNavigate } from "react-router";
 import type { Route } from "./+types/home";
 import { bubbles } from "~/bubbles";
 
+import type { ConeColor, Flavor } from "~/stages";
+
+const coneImage: Record<ConeColor, string> = {
+  red: "/cone_red.png",
+  yellow: "/cone_yellow.png",
+  brown: "/cone_brown.png",
+};
+
+const scoopImage: Record<Flavor, string> = {
+  vanilla: "/ice_vanilla.png",
+  chocolate: "/ice_chocolate.png",
+  strawberry: "/ice_strawberry.png",
+};
+
+type IceCreamSpec = {
+  x: string | number;
+  y: string | number;
+  cone: ConeColor;
+  scoops: Flavor[];
+};
+
+function renderIceCream(spec: IceCreamSpec, index: number) {
+  return (
+    <div
+      key={index}
+      className="absolute z-0 pointer-events-none"
+      style={{ top: spec.y, left: spec.x }}
+    >
+      <img
+        src={coneImage[spec.cone]}
+        alt={`Cone ${spec.cone}`}
+        className="w-14 h-auto"
+      />
+      {spec.scoops.map((flavor, scoopIndex) => (
+        <img
+          key={scoopIndex}
+          src={scoopImage[flavor]}
+          alt={`${flavor} scoop`}
+          className="w-14 h-14 absolute left-0"
+          style={{ top: -44 - scoopIndex * 32 }}
+        />
+      ))}
+    </div>
+  );
+}
+
+const iceCreams : IceCreamSpec[] = [
+  { x: "24px", y: "calc(100% - 100px)", cone: "red", scoops: ["vanilla", "chocolate", "chocolate","strawberry", "strawberry"] },
+  { x: "25%", y: "calc(100% - 100px)", cone: "brown", scoops: ["strawberry", "vanilla", "chocolate"] },
+  { x: "50%", y: "calc(100% - 100px)", cone: "yellow", scoops: ["chocolate"] },
+  { x: "75%", y: "calc(100% - 100px)", cone: "red", scoops: ["chocolate", "strawberry", "vanilla"] },
+  { x: "calc(100% - 100px)", y: "calc(100% - 100px)", cone: "brown", scoops: ["strawberry", "strawberry", "chocolate", "vanilla", "strawberry"] },
+];
+
 export function meta({}: Route.MetaArgs) {
   return [
     { title: "アイスクリームゲーム" },
@@ -36,6 +90,9 @@ export default function Home() {
         />
       ))}
 
+      {/* Ice cream decorations */}
+      {iceCreams.map(renderIceCream)}
+
       {/* Main content */}
       <div className="relative z-10 flex flex-col items-center">
         <h1
@@ -61,7 +118,7 @@ export default function Home() {
           </button>
           <button
             className="pixel-btn pixel-btn-secondary"
-            onClick={() => alert("準備中")}
+            onClick={() => navigate("/how-to-play")}
           >
             あそびかた
           </button>
