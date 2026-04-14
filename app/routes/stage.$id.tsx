@@ -92,6 +92,23 @@ function getComponentSrc(
   return { src: "" };
 }
 
+function ConeStack({ color, stack }: { color: ConeColor; stack: Flavor[] }) {
+  return (
+    <div className="flex flex-col-reverse items-center">
+      <img src={`/cone_${color}.png`} alt="" className="h-10" />
+      {stack.map((flavor, i) => (
+        <img
+          key={i}
+          src={`/ice_${flavor}.png`}
+          alt=""
+          className="h-8 -mb-3"
+          style={{ zIndex: i + 1 }}
+        />
+      ))}
+    </div>
+  );
+}
+
 function StartNode() {
   return (
     <div className="flex flex-col items-center gap-1">
@@ -238,6 +255,15 @@ function SplitNode({ data }: NodeProps<AppNode>) {
   );
 }
 
+function isFlavorStackMatch(expected: Flavor[], actual?: Flavor[]): boolean {
+  if (!actual) return false;
+  if (expected.length !== actual.length) return false;
+  for (let i = 0; i < expected.length; i++) {
+    if (expected[i] !== actual[i]) return false;
+  }
+  return true;
+}
+
 function checkClear(
   mission: Partial<Record<ConeColor, Flavor[]>>,
   result: Partial<Record<ConeColor, Flavor[]>>,
@@ -246,12 +272,7 @@ function checkClear(
     ConeColor,
     Flavor[],
   ][]) {
-    const actual = result[color];
-    if (!actual) return false;
-    if (expected.length !== actual.length) return false;
-    for (let i = 0; i < expected.length; i++) {
-      if (expected[i] !== actual[i]) return false;
-    }
+    if (!isFlavorStackMatch(expected, result[color])) return false;
   }
   return true;
 }
@@ -262,10 +283,11 @@ type AnimSegment = {
   componentIndex?: number;
   branchTaken?: boolean;
   isNodePause?: boolean;
-} & (
-  | { kind: "edge"; pathEl: SVGPathElement; totalLength: number }
-  | { kind: "linear"; x1: number; y1: number; x2: number; y2: number }
-);
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+};
 
 type FlyingCone = {
   id: number;
@@ -283,21 +305,41 @@ type FlyingConeRender = {
   stack: Flavor[];
 };
 
+type TransitCone = {
+  id: number;
+  color: ConeColor;
+  stack: Flavor[];
+  startX: number;
+  startY: number;
+  targetX: number;
+  targetY: number;
+  startTime: number;
+  durationMs: number;
+};
+
+type PaletteEntry = {
+  color: ConeColor;
+  stack: Flavor[];
+};
+
 type AnimState = {
   cones: FlyingCone[];
   spawnQueue: { color: ConeColor; segments: AnimSegment[] }[];
   nextSpawnTime: number;
   nextId: number;
   result: Partial<Record<ConeColor, Flavor[]>>;
+  transitCones: TransitCone[];
 };
 
 const SPEED_PPS = 100;
 const SPAWN_INTERVAL_MS = 2000;
 const NODE_WIDTH_PX = 96;
+const SPLIT_NODE_WIDTH_PX = 144;
 const SPLIT_Y_OFFSET = 20;
 const PAUSE_AT_NODE_MS = 200;
 const PAUSE_AT_TERMINAL_MS = 600;
 const MIN_SEGMENT_MS = 80;
+const TRANSIT_DURATION_MS = 700;
 
 function getEdgePathEl(edgeId: string): SVGPathElement | null {
   return (
@@ -387,18 +429,21 @@ function buildFullPath(
     const componentIndex = trace[i].componentIndex;
     const branchTaken = trace[i].branchTaken;
 
-    // 1. Edge segment (old stack — not yet processed)
+    // 1. Edge segment (precompute start/end for stable coordinates)
+    const edgeStart = pathEl.getPointAtLength(0);
+    const edgeEnd = pathEl.getPointAtLength(totalLength);
     segments.push({
-      kind: "edge",
-      pathEl,
-      totalLength,
+      x1: edgeStart.x,
+      y1: edgeStart.y,
+      x2: edgeEnd.x,
+      y2: edgeEnd.y,
       stackAfter: prevStack,
       durationMs: lengthMs(totalLength),
       componentIndex,
       branchTaken,
     });
 
-    const inp = pathEl.getPointAtLength(totalLength);
+    const inp = edgeEnd;
 
     // Determine output handle position
     let outX: number;
@@ -409,9 +454,10 @@ function buildFullPath(
       outX = p.x;
       outY = p.y;
     } else {
-      outX = inp.x + NODE_WIDTH_PX;
-      outY = inp.y;
       const lastNode = nodeByComp.get(trace[i].componentIndex);
+      const nodeWidth = lastNode?.type === "split" ? SPLIT_NODE_WIDTH_PX : NODE_WIDTH_PX;
+      outX = inp.x + nodeWidth;
+      outY = inp.y;
       if (lastNode?.type === "split" && trace[i].branchTaken !== undefined) {
         outY = trace[i].branchTaken
           ? inp.y - SPLIT_Y_OFFSET
@@ -441,7 +487,6 @@ function buildFullPath(
 
     // 2. Input handle → center (old stack still)
     segments.push({
-      kind: "linear",
       x1: inp.x,
       y1: inp.y,
       x2: cx,
@@ -454,7 +499,6 @@ function buildFullPath(
 
     // 3. Pause at center (stack updates here)
     segments.push({
-      kind: "linear",
       x1: cx,
       y1: cy,
       x2: cx,
@@ -468,7 +512,6 @@ function buildFullPath(
 
     // 4. Center → output handle (new stack, diagonal for split nodes)
     segments.push({
-      kind: "linear",
       x1: cx,
       y1: cy,
       x2: outX,
@@ -482,7 +525,6 @@ function buildFullPath(
     // 5. Terminal pause (last node only)
     if (i === edgePaths.length - 1) {
       segments.push({
-        kind: "linear",
         x1: outX,
         y1: outY,
         x2: outX,
@@ -539,6 +581,12 @@ function StageInner({
   >(new Map());
   const animRef = useRef<AnimState | null>(null);
   const rafRef = useRef<number | null>(null);
+  const outerContainerRef = useRef<HTMLDivElement>(null);
+  const paletteSlotRefs = useRef<Map<ConeColor, HTMLDivElement>>(new Map());
+  const [transitConeRenders, setTransitConeRenders] = useState<
+    FlyingConeRender[]
+  >([]);
+  const [paletteEntries, setPaletteEntries] = useState<PaletteEntry[]>([]);
 
   const onConnect: OnConnect = useCallback(
     (params) => {
@@ -774,6 +822,8 @@ function StageInner({
     setFailMessage("");
     setIsClear(false);
     setIsAnimating(true);
+    setPaletteEntries([]);
+    setTransitConeRenders([]);
 
     animRef.current = {
       cones: [],
@@ -781,6 +831,7 @@ function StageInner({
       nextSpawnTime: 0,
       nextId: 0,
       result,
+      transitCones: [],
     };
 
     const loop = (timestamp: number) => {
@@ -830,34 +881,23 @@ function StageInner({
           }
         }
 
-        let px: number | null = null;
-        let py: number | null = null;
+        const px = seg.x1 + (seg.x2 - seg.x1) * progress;
+        const py = seg.y1 + (seg.y2 - seg.y1) * progress;
 
-        if (seg.kind === "edge") {
-          const pt = seg.pathEl.getPointAtLength(progress * seg.totalLength);
-          px = pt.x;
-          py = pt.y;
-        } else {
-          px = seg.x1 + (seg.x2 - seg.x1) * progress;
-          py = seg.y1 + (seg.y2 - seg.y1) * progress;
-        }
+        const stack =
+          progress >= 1
+            ? seg.stackAfter
+            : cone.currentSegment > 0
+              ? cone.segments[cone.currentSegment - 1].stackAfter
+              : [];
 
-        if (px !== null && py !== null) {
-          const stack =
-            progress >= 1
-              ? seg.stackAfter
-              : cone.currentSegment > 0
-                ? cone.segments[cone.currentSegment - 1].stackAfter
-                : [];
-
-          rendered.push({
-            id: cone.id,
-            color: cone.color,
-            x: px * viewport.zoom + viewport.x,
-            y: py * viewport.zoom + viewport.y,
-            stack,
-          });
-        }
+        rendered.push({
+          id: cone.id,
+          color: cone.color,
+          x: px * viewport.zoom + viewport.x,
+          y: py * viewport.zoom + viewport.y,
+          stack,
+        });
 
         if (progress >= 1) {
           cone.currentSegment++;
@@ -865,17 +905,110 @@ function StageInner({
         }
       }
 
+      // Detect cones that just finished all segments → create transit cones
+      const justFinished = anim.cones.filter(
+        (c) => c.currentSegment >= c.segments.length,
+      );
+
+      if (
+        justFinished.length > 0 &&
+        outerContainerRef.current &&
+        reactFlowWrapper.current
+      ) {
+        const outerRect =
+          outerContainerRef.current.getBoundingClientRect();
+        const wrapperRect =
+          reactFlowWrapper.current.getBoundingClientRect();
+
+        for (const cone of justFinished) {
+          const renderedCone = rendered.find((r) => r.id === cone.id);
+          if (!renderedCone) continue;
+
+          const startX =
+            renderedCone.x + wrapperRect.left - outerRect.left;
+          const startY =
+            renderedCone.y + wrapperRect.top - outerRect.top;
+
+          const slotEl = paletteSlotRefs.current.get(cone.color);
+          if (!slotEl) continue;
+          const slotRect = slotEl.getBoundingClientRect();
+          const targetX =
+            slotRect.left - outerRect.left + slotRect.width / 2;
+          const targetY =
+            slotRect.top - outerRect.top + slotRect.height / 2;
+
+          const lastSeg = cone.segments[cone.segments.length - 1];
+
+          anim.transitCones.push({
+            id: cone.id,
+            color: cone.color,
+            stack: lastSeg.stackAfter,
+            startX,
+            startY,
+            targetX,
+            targetY,
+            startTime: timestamp,
+            durationMs: TRANSIT_DURATION_MS,
+          });
+        }
+      }
+
       // Remove finished cones
       anim.cones = anim.cones.filter(
         (c) => c.currentSegment < c.segments.length,
       );
+
+      // Update transit cones
+      const transitRendered: FlyingConeRender[] = [];
+      const arrivedTransit: TransitCone[] = [];
+
+      for (const tc of anim.transitCones) {
+        const elapsed = timestamp - tc.startTime;
+        const progress = Math.min(elapsed / tc.durationMs, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+
+        const x = tc.startX + (tc.targetX - tc.startX) * eased;
+        const y = tc.startY + (tc.targetY - tc.startY) * eased;
+
+        if (progress >= 1) {
+          arrivedTransit.push(tc);
+        } else {
+          transitRendered.push({
+            id: tc.id,
+            color: tc.color,
+            x,
+            y,
+            stack: tc.stack,
+          });
+        }
+      }
+
+      if (arrivedTransit.length > 0) {
+        anim.transitCones = anim.transitCones.filter(
+          (tc) => !arrivedTransit.includes(tc),
+        );
+        setPaletteEntries((prev) => [
+          ...prev,
+          ...arrivedTransit.map((tc) => ({
+            color: tc.color,
+            stack: tc.stack,
+          })),
+        ]);
+      }
+
+      setTransitConeRenders(transitRendered);
       setFlyingCones(rendered);
 
       // All done?
-      if (anim.cones.length === 0 && anim.spawnQueue.length === 0) {
+      if (
+        anim.cones.length === 0 &&
+        anim.spawnQueue.length === 0 &&
+        anim.transitCones.length === 0
+      ) {
         animRef.current = null;
         setIsAnimating(false);
         setFlyingCones([]);
+        setTransitConeRenders([]);
         setTakenBranchMap(new Map());
         if (checkClear(stageData.mission, anim.result)) {
           setIsClear(true);
@@ -899,8 +1032,17 @@ function StageInner({
     navigate(path);
   };
 
+  const missionColors = Object.keys(stageData.mission) as ConeColor[];
+  const allArrivedToPalette =
+    !isAnimating &&
+    paletteEntries.length > 0 &&
+    missionColors.every((c) => paletteEntries.some((e) => e.color === c));
+
   return (
-    <div className="w-full h-full bg-amber-100 flex flex-col overflow-hidden relative">
+    <div
+      className="w-full h-full bg-amber-100 flex flex-col overflow-hidden relative"
+      ref={outerContainerRef}
+    >
       <div className="flex-none p-2 flex items-start gap-4">
         <button
           type="button"
@@ -959,21 +1101,66 @@ function StageInner({
               zIndex: 100,
             }}
           >
-            <div className="flex flex-col-reverse items-center">
-              <img src={`/cone_${cone.color}.png`} alt="" className="h-10" />
-              {cone.stack.map((flavor, i) => (
-                <img
-                  key={i}
-                  src={`/ice_${flavor}.png`}
-                  alt=""
-                  className="h-8 -mb-3"
-                  style={{ zIndex: i + 1 }}
-                />
-              ))}
-            </div>
+            <ConeStack color={cone.color} stack={cone.stack} />
           </div>
         ))}
+
+        {/* Result palette (floating inside canvas) */}
+        <div className="absolute top-3 right-3 w-40 bg-white/90 backdrop-blur-sm rounded-lg border-2 border-gray-300 shadow-lg flex flex-col p-3 gap-3 z-10 max-h-[calc(100%-24px)] overflow-y-auto">
+          <div className="font-[DotGothic16] text-sm text-center text-gray-600">
+            けっか
+          </div>
+          {missionColors.map((color) => {
+            const entry = paletteEntries.find((e) => e.color === color);
+            const expected = stageData.mission[color]!;
+            const isMatch = isFlavorStackMatch(expected, entry?.stack);
+
+            return (
+              <div
+                key={color}
+                ref={(el) => {
+                  if (el) paletteSlotRefs.current.set(color, el);
+                }}
+                className={`border-2 rounded-lg p-2 flex flex-col items-center min-h-32 justify-center ${
+                  allArrivedToPalette
+                    ? isMatch
+                      ? "border-green-500 bg-green-50"
+                      : "border-red-500 bg-red-50"
+                    : entry
+                      ? "border-gray-300"
+                      : "border-dashed border-gray-300"
+                }`}
+              >
+                {entry ? (
+                  <ConeStack color={entry.color} stack={entry.stack} />
+                ) : (
+                  <img
+                    src={`/cone_${color}.png`}
+                    alt=""
+                    className="h-8 opacity-30"
+                  />
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
+
+      {/* Transit cones (flying to palette) */}
+      {transitConeRenders.map((cone) => (
+        <div
+          key={cone.id}
+          className="absolute pointer-events-none"
+          style={{
+            left: cone.x,
+            top: cone.y,
+            transform: "translate(-50%, -50%)",
+            zIndex: 200,
+          }}
+        >
+          <ConeStack color={cone.color} stack={cone.stack} />
+        </div>
+      ))}
 
       <div className="bg-amber-50 h-50 flex items-center gap-4 px-4 overflow-x-auto border-t-2 border-orange-200 flex-none">
         {stageData.components.map((component: Component, index: number) => {
@@ -998,7 +1185,7 @@ function StageInner({
                 <img
                   src={src}
                   alt={component.type}
-                  className={`${hasOverlay ? "h-30" : "h-20"} pointer-events-none"`}
+                  className={`${hasOverlay ? "h-30" : "h-20"} pointer-events-none`}
                 />
               ) : (
                 <span className="text-xs font-bold pointer-events-none">
