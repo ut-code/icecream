@@ -965,18 +965,14 @@ function StageInner({
         for (const cone of justFinished) {
           const renderedCone = rendered.find((r) => r.id === cone.id);
           if (!renderedCone) continue;
-
           const startX = renderedCone.x + wrapperRect.left - outerRect.left;
           const startY = renderedCone.y + wrapperRect.top - outerRect.top;
-
           const slotEl = paletteSlotRefs.current.get(cone.color);
           if (!slotEl) continue;
           const slotRect = slotEl.getBoundingClientRect();
           const targetX = slotRect.left - outerRect.left + slotRect.width / 2;
           const targetY = slotRect.top - outerRect.top + slotRect.height / 2;
-
           const lastSeg = cone.segments[cone.segments.length - 1];
-
           anim.transitCones.push({
             id: cone.id,
             color: cone.color,
@@ -1190,7 +1186,6 @@ function StageInner({
             <ConeStack color={cone.color} stack={cone.stack} />
           </div>
         ))}
-
         <div className="absolute top-1/4 right-3 w-40 bg-white/90 backdrop-blur-sm rounded-lg border-2 border-gray-300 shadow-lg flex flex-col p-3 gap-3 z-10 max-h-[calc(100%-24px)] overflow-y-auto">
           <div className="font-[DotGothic16] text-sm text-center text-gray-600">
             けっか
@@ -1245,7 +1240,6 @@ function StageInner({
           <ConeStack color={cone.color} stack={cone.stack} />
         </div>
       ))}
-
       <div className="absolute inset-x-0 bottom-0 bg-amber-50 h-50 flex items-center gap-4 px-4 overflow-x-auto border-t-2 border-orange-200">
         {stageData.components.map((component: Component, index: number) => {
           if (!remainedComponentIdxs.includes(index)) return;
