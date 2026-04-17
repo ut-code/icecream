@@ -17,6 +17,9 @@ import {
   type OnConnect,
   type Edge,
   ConnectionLineType,
+  BaseEdge,
+  getStraightPath,
+  type EdgeProps,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import type { ConeColor, Flavor, StageData } from "~/stages";
@@ -29,6 +32,30 @@ import {
 let id = 0;
 const getId = () => `node_${id++}`;
 
+function CustomEdge({ id, sourceX, sourceY, targetX, targetY, selected, setEdges }: EdgeProps & { setEdges: React.Dispatch<React.SetStateAction<Edge[]>> }) {
+  const [edgePath] = getStraightPath({ sourceX, sourceY, targetX, targetY });
+
+  return (
+    <>
+      <BaseEdge path={edgePath} />
+      {selected && (
+        <button
+          type="button"
+          className="pixel-btn pixel-btn-small absolute z-10"
+          style={{
+            left: (sourceX + targetX) / 2,
+            top: (sourceY + targetY) / 2,
+            transform: 'translate(-50%, -50%)',
+          }}
+          onClick={() => setEdges(edges => edges.filter(e => e.id !== id))}
+        >
+          削除
+        </button>
+      )}
+    </>
+  );
+}
+
 type AppNode = Node<{
   label: string | React.ReactNode;
   src?: string;
@@ -37,6 +64,7 @@ type AppNode = Node<{
   overlayNumber?: number;
   component: Component;
   componentIndex: number;
+  onDelete?: () => void;
 }>;
 
 const HANDLE_CLASS = "!w-3 !h-3 !bg-gray-500 !border-2 !border-gray-800";
@@ -120,9 +148,18 @@ function StartNode() {
   );
 }
 
-function StraightNode({ data }: NodeProps<AppNode>) {
+function StraightNode({ data, selected }: NodeProps<AppNode>) {
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col items-center relative">
+      {selected && data.onDelete && (
+        <button
+          type="button"
+          className="pixel-btn pixel-btn-small absolute -top-10 left-1/2 transform -translate-x-1/2 z-10"
+          onClick={data.onDelete}
+        >
+          削除
+        </button>
+      )}
       <div className="bg-amber-100 rounded-sm border border-amber-500 h-24 w-24 flex items-center justify-center relative">
         {data.src ? (
           <img src={data.src} alt="" className="h-16" />
@@ -154,9 +191,18 @@ function StraightNode({ data }: NodeProps<AppNode>) {
   );
 }
 
-function SplitNode({ data }: NodeProps<AppNode>) {
+function SplitNode({ data, selected }: NodeProps<AppNode>) {
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col items-center relative">
+      {selected && data.onDelete && (
+        <button
+          type="button"
+          className="pixel-btn pixel-btn-small absolute -top-10 left-1/2 transform -translate-x-1/2 z-10"
+          onClick={data.onDelete}
+        >
+          削除
+        </button>
+      )}
       <div className="bg-amber-100 rounded-sm border border-amber-500 h-36 w-36 flex items-center justify-center relative">
         {data.src ? (
           <img src={data.src} alt="" className="h-30" />
@@ -663,8 +709,9 @@ function StageInner({
       const { src, overlaySrc, overlaySrcs, overlayNumber } =
         getComponentSrc(component);
 
+      const id = getId();
       const newNode: AppNode = {
-        id: getId(),
+        id,
         type: component.type === "if" ? "split" : "straight",
         position: centeredPosition,
         data: {
@@ -675,6 +722,11 @@ function StageInner({
           overlayNumber,
           component,
           componentIndex,
+          onDelete: () => {
+            setNodes(nodes => nodes.filter(n => n.id !== id));
+            setEdges(edges => edges.filter(e => e.source !== id && e.target !== id));
+            setRemainedComponentIdxs(prev => [...prev, componentIndex].sort());
+          },
         },
       };
 
