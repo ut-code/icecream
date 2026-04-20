@@ -8,7 +8,6 @@ import {
   addEdge,
   useNodesState,
   useEdgesState,
-  Controls,
   useReactFlow,
   Handle,
   Position,
@@ -1190,6 +1189,7 @@ function StageInner({
           onDragOver={onDragOver}
           onNodeDragStop={onNodeDragStop}
           autoPanOnNodeDrag={false}
+          deleteKeyCode={null}
           defaultEdgeOptions={{
             type: "custom",
             selectable: true,
@@ -1201,7 +1201,6 @@ function StageInner({
           connectionLineType={ConnectionLineType.Straight}
           defaultViewport={{ x: 20, y: 200, zoom: 1 }}
         >
-          <Controls />
         </ReactFlow>
 
         {flyingCones.map((cone) => (
