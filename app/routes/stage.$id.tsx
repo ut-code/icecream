@@ -20,6 +20,7 @@ import {
   BaseEdge,
   getStraightPath,
   type EdgeProps,
+  type OnNodeDrag,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import type { ConeColor, Flavor, StageData } from "~/stages";
@@ -600,6 +601,7 @@ function StageInner({
   const animRef = useRef<AnimState | null>(null);
   const rafRef = useRef<number | null>(null);
   const outerContainerRef = useRef<HTMLDivElement>(null);
+  const paletteTrayRef = useRef<HTMLDivElement>(null);
   const paletteSlotRefs = useRef<Map<ConeColor, HTMLDivElement>>(new Map());
   const [transitConeRenders, setTransitConeRenders] = useState<
     FlyingConeRender[]
@@ -629,7 +631,6 @@ function StageInner({
             style={{ overflow: "visible" }}
           >
             <div
-              xmlns="http://www.w3.org/1999/xhtml"
               style={{
                 width: "100%",
                 height: "100%",
@@ -702,6 +703,40 @@ function StageInner({
     event.dataTransfer.dropEffect = "move";
   }, []);
 
+  const removePlacedNode = useCallback(
+    (nodeId: string, componentIndex: number) => {
+      setNodes((prev) => prev.filter((n) => n.id !== nodeId));
+      setEdges((prev) =>
+        prev.filter((e) => e.source !== nodeId && e.target !== nodeId),
+      );
+      setRemainedComponentIdxs((prev) => {
+        if (prev.includes(componentIndex)) return prev;
+        return [...prev, componentIndex].sort((a, b) => a - b);
+      });
+    },
+    [setNodes, setEdges, setRemainedComponentIdxs],
+  );
+
+  const onNodeDragStop: OnNodeDrag<AppNode> = useCallback(
+    (_event, node) => {
+      if (node.id === "start") return;
+      if (!paletteTrayRef.current || !reactFlowWrapper.current) return;
+
+      const trayTop = paletteTrayRef.current.getBoundingClientRect().top;
+      const wrapperTop = reactFlowWrapper.current.getBoundingClientRect().top;
+      const viewport = getViewport();
+      const nodeHeight = node.type === "split" ? 176 : 120;
+
+      const nodeTop = wrapperTop + node.position.y * viewport.zoom + viewport.y;
+      const nodeBottom = nodeTop + nodeHeight * viewport.zoom;
+
+      if (nodeBottom >= trayTop) {
+        removePlacedNode(node.id, node.data.componentIndex);
+      }
+    },
+    [getViewport, removePlacedNode],
+  );
+
   const onDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
@@ -748,16 +783,14 @@ function StageInner({
           component,
           componentIndex,
           onDelete: () => {
-            setNodes(nodes => nodes.filter(n => n.id !== id));
-            setEdges(edges => edges.filter(e => e.source !== id && e.target !== id));
-            setRemainedComponentIdxs(prev => [...prev, componentIndex].sort());
+            removePlacedNode(id, componentIndex);
           },
         },
       };
 
       setNodes((nds) => nds.concat(newNode));
     },
-    [screenToFlowPosition, setNodes],
+    [removePlacedNode, screenToFlowPosition, setNodes],
   );
 
   const generateComponents = (
@@ -1155,6 +1188,8 @@ function StageInner({
           onConnect={onConnect}
           onDrop={onDrop}
           onDragOver={onDragOver}
+          onNodeDragStop={onNodeDragStop}
+          autoPanOnNodeDrag={false}
           defaultEdgeOptions={{
             type: "custom",
             selectable: true,
@@ -1241,7 +1276,10 @@ function StageInner({
         </div>
       ))}
 
-      <div className="bg-amber-50 h-50 flex items-center gap-4 px-4 overflow-x-auto border-t-2 border-orange-200 flex-none">
+      <div
+        className="bg-amber-50 h-50 flex items-center gap-4 px-4 overflow-x-auto border-t-2 border-orange-200 flex-none"
+        ref={paletteTrayRef}
+      >
         {stageData.components.map((component: Component, index: number) => {
           if (!remainedComponentIdxs.includes(index)) return;
 
