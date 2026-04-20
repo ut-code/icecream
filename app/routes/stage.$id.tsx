@@ -32,30 +32,6 @@ import {
 let id = 0;
 const getId = () => `node_${id++}`;
 
-function CustomEdge({ id, sourceX, sourceY, targetX, targetY, selected, setEdges }: EdgeProps & { setEdges: React.Dispatch<React.SetStateAction<Edge[]>> }) {
-  const [edgePath] = getStraightPath({ sourceX, sourceY, targetX, targetY });
-
-  return (
-    <>
-      <BaseEdge path={edgePath} />
-      {selected && (
-        <button
-          type="button"
-          className="pixel-btn pixel-btn-small absolute z-10"
-          style={{
-            left: (sourceX + targetX) / 2,
-            top: (sourceY + targetY) / 2,
-            transform: 'translate(-50%, -50%)',
-          }}
-          onClick={() => setEdges(edges => edges.filter(e => e.id !== id))}
-        >
-          削除
-        </button>
-      )}
-    </>
-  );
-}
-
 type AppNode = Node<{
   label: string | React.ReactNode;
   src?: string;
@@ -595,10 +571,6 @@ function StageInner({
 }) {
   const navigate = useNavigate();
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
-  const nodeTypes = useMemo(
-    () => ({ start: StartNode, straight: StraightNode, split: SplitNode }),
-    [],
-  );
   const [remainedComponentIdxs, setRemainedComponentIdxs] = useState<number[]>([
     ...Array(stageData.components.length).keys(),
   ]);
@@ -633,16 +605,69 @@ function StageInner({
     FlyingConeRender[]
   >([]);
   const [paletteEntries, setPaletteEntries] = useState<PaletteEntry[]>([]);
+  const nodeTypes = useMemo(
+    () => ({ start: StartNode, straight: StraightNode, split: SplitNode }),
+    [],
+  );
+
+  function CustomEdge({ id, sourceX, sourceY, targetX, targetY, selected, style }: EdgeProps) {
+    const [edgePath] = getStraightPath({ sourceX, sourceY, targetX, targetY });
+    const midX = (sourceX + targetX) / 2;
+    const midY = (sourceY + targetY) / 2;
+    const buttonWidth = 60;
+    const buttonHeight = 24;
+
+    return (
+      <>
+        <BaseEdge path={edgePath} style={style} />
+        {selected && (
+          <foreignObject
+            x={midX - buttonWidth / 2}
+            y={midY - buttonHeight - 8}
+            width={buttonWidth}
+            height={buttonHeight}
+            style={{ overflow: "visible" }}
+          >
+            <div
+              xmlns="http://www.w3.org/1999/xhtml"
+              style={{
+                width: "100%",
+                height: "100%",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <button
+                type="button"
+                className="pixel-btn pixel-btn-small"
+                onClick={() => setEdges((edges) => edges.filter((e) => e.id !== id))}
+              >
+                削除
+              </button>
+            </div>
+          </foreignObject>
+        )}
+      </>
+    );
+  }
+
+  const edgeTypes = useMemo(
+    () => ({ custom: CustomEdge }),
+    [],
+  );
 
   const onConnect: OnConnect = useCallback(
     (params) => {
+      const style = { stroke: "#6b7280", strokeWidth: 10, strokeLinecap: "round" as const };
+
       setEdges((eds) => {
         const sourceNode = nodes.find((n) => n.id === params.source);
         const isSplitNode = sourceNode?.type === "split";
 
         if (isSplitNode) {
           return addEdge(
-            params,
+            { ...params, style },
             eds.filter(
               (e) =>
                 !(
@@ -653,7 +678,7 @@ function StageInner({
           );
         } else {
           return addEdge(
-            params,
+            { ...params, style },
             eds.filter((e) => e.source !== params.source),
           );
         }
@@ -1124,13 +1149,15 @@ function StageInner({
           nodes={nodes}
           edges={edges}
           nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           onDrop={onDrop}
           onDragOver={onDragOver}
           defaultEdgeOptions={{
-            type: "straight",
+            type: "custom",
+            selectable: true,
             style: {
               strokeWidth: 10,
               strokeLinecap: "round",
