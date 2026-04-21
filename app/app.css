@@ -145,4 +145,5 @@ body {
 
 img {
   image-rendering: pixelated;
+  -webkit-user-drag: none;
 }

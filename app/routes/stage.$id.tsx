@@ -112,10 +112,18 @@ function ConeStack({ color, stack }: { color: ConeColor; stack: Flavor[] }) {
 function StartNode() {
   return (
     <div className="flex flex-col items-center gap-1">
-      <div className="bg-gray-800 text-white font-[DotGothic16] text-xs px-3 py-1 rounded border-2 border-gray-900">
-        コーン投入口
+      <div className="bg-gray-800 text-white font-[DotGothic16] text-xl p-3 rounded border-2 border-gray-900">
+        コーン
+        <ruby>
+          投入口
+          <rt>とうにゅうぐち</rt>
+        </ruby>
       </div>
-      <Handle type="source" position={Position.Right} />
+      <Handle
+        type="source"
+        position={Position.Right}
+        className={HANDLE_CLASS}
+      />
     </div>
   );
 }
@@ -178,7 +186,7 @@ function SplitNode({ data }: NodeProps<AppNode>) {
           </div>
         )}
         {data.overlayNumber !== undefined && (
-          <div className="absolute bottom-23 left-9 font-bold text-base">
+          <div className="absolute bottom-23 left-9 font-bold text-base font-[DotGothic16]">
             <span className="text-2xl">{data.overlayNumber}</span>コ
             <ruby>
               以上
@@ -455,7 +463,8 @@ function buildFullPath(
       outY = p.y;
     } else {
       const lastNode = nodeByComp.get(trace[i].componentIndex);
-      const nodeWidth = lastNode?.type === "split" ? SPLIT_NODE_WIDTH_PX : NODE_WIDTH_PX;
+      const nodeWidth =
+        lastNode?.type === "split" ? SPLIT_NODE_WIDTH_PX : NODE_WIDTH_PX;
       outX = inp.x + nodeWidth;
       outY = inp.y;
       if (lastNode?.type === "split" && trace[i].branchTaken !== undefined) {
@@ -573,7 +582,7 @@ function StageInner({
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const { screenToFlowPosition, getViewport } = useReactFlow();
   const [isClear, setIsClear] = useState(false);
-  const [failMessage, setFailMessage] = useState("");
+  const [failMessage, setFailMessage] = useState<React.ReactNode>("");
   const [isAnimating, setIsAnimating] = useState(false);
   const [flyingCones, setFlyingCones] = useState<FlyingConeRender[]>([]);
   const [takenBranchMap, setTakenBranchMap] = useState<
@@ -795,13 +804,48 @@ function StageInner({
 
     const startEdge = edges.find((e) => e.source === "start");
     if (!startEdge) {
-      setFailMessage("始点からコンポーネントを接続してください");
+      setFailMessage(
+        <>
+          <ruby>
+            始点
+            <rt>してん</rt>
+          </ruby>
+          から
+          <ruby>
+            部品
+            <rt>ぶひん</rt>
+          </ruby>
+          を
+          <ruby>
+            接続
+            <rt>せつぞく</rt>
+          </ruby>
+          してください
+        </>,
+      );
       return;
     }
 
     const firstNode = nodes.find((n) => n.id === startEdge.target);
     if (!firstNode || firstNode.id === "start") {
-      setFailMessage("始点からの接続が正しくありません");
+      setFailMessage(
+        <>
+          <ruby>
+            始点
+            <rt>してん</rt>
+          </ruby>
+          からの
+          <ruby>
+            接続
+            <rt>せつぞく</rt>
+          </ruby>
+          が
+          <ruby>
+            正<rt>ただ</rt>
+          </ruby>
+          しくありません
+        </>,
+      );
       return;
     }
 
@@ -915,30 +959,20 @@ function StageInner({
         outerContainerRef.current &&
         reactFlowWrapper.current
       ) {
-        const outerRect =
-          outerContainerRef.current.getBoundingClientRect();
-        const wrapperRect =
-          reactFlowWrapper.current.getBoundingClientRect();
+        const outerRect = outerContainerRef.current.getBoundingClientRect();
+        const wrapperRect = reactFlowWrapper.current.getBoundingClientRect();
 
         for (const cone of justFinished) {
           const renderedCone = rendered.find((r) => r.id === cone.id);
           if (!renderedCone) continue;
-
-          const startX =
-            renderedCone.x + wrapperRect.left - outerRect.left;
-          const startY =
-            renderedCone.y + wrapperRect.top - outerRect.top;
-
+          const startX = renderedCone.x + wrapperRect.left - outerRect.left;
+          const startY = renderedCone.y + wrapperRect.top - outerRect.top;
           const slotEl = paletteSlotRefs.current.get(cone.color);
           if (!slotEl) continue;
           const slotRect = slotEl.getBoundingClientRect();
-          const targetX =
-            slotRect.left - outerRect.left + slotRect.width / 2;
-          const targetY =
-            slotRect.top - outerRect.top + slotRect.height / 2;
-
+          const targetX = slotRect.left - outerRect.left + slotRect.width / 2;
+          const targetY = slotRect.top - outerRect.top + slotRect.height / 2;
           const lastSeg = cone.segments[cone.segments.length - 1];
-
           anim.transitCones.push({
             id: cone.id,
             color: cone.color,
@@ -1013,7 +1047,23 @@ function StageInner({
         if (checkClear(stageData.mission, anim.result)) {
           setIsClear(true);
         } else {
-          setFailMessage("不一致です。もう一度試してください。");
+          setFailMessage(
+            <>
+              <ruby>
+                不一致
+                <rt>ふいっち</rt>
+              </ruby>
+              です。もう
+              <ruby>
+                一度
+                <rt>いちど</rt>
+              </ruby>
+              <ruby>
+                試<rt>ため</rt>
+              </ruby>
+              してください。
+            </>,
+          );
         }
         return;
       }
@@ -1043,7 +1093,7 @@ function StageInner({
       className="w-full h-full bg-amber-100 flex flex-col overflow-hidden relative"
       ref={outerContainerRef}
     >
-      <div className="flex-none p-2 flex items-start gap-4">
+      <div className="absolute top-2 left-2 z-20 flex items-start gap-4">
         <button
           type="button"
           className="pixel-btn pixel-btn-small"
@@ -1053,30 +1103,62 @@ function StageInner({
         </button>
 
         {/* Mission display */}
-        <div className="bg-white/80 rounded-lg p-3 border-2 border-gray-400 text-gray-800">
-          <div className="font-[DotGothic16] text-sm mb-2">おだい</div>
-          <div className="font-[DotGothic16] text-sm">
-            {(Object.entries(stageData.mission) as [ConeColor, Flavor[]][]).map(
-              ([color, flavors]) => (
-                <div key={color}>
-                  {color}: {flavors.join(", ")}
+        <div className="bg-white/90 p-3 backdrop-blur-sm rounded-lg border-2 border-gray-300 shadow-lg text-gray-800">
+          <div className="flex items-start gap-4">
+            <div className="font-[DotGothic16] text-2xl shrink-0">
+              <ruby>
+                注文
+                <rt>ちゅうもん</rt>
+              </ruby>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              {(
+                Object.entries(stageData.mission) as [ConeColor, Flavor[]][]
+              ).map(([color, flavors]) => (
+                <div key={color} className="px-2 py-1 min-w-16">
+                  <div className="flex flex-col-reverse items-center">
+                    <img
+                      src={`/cone_${color}.png`}
+                      alt=""
+                      className="h-12 select-none"
+                    />
+                    {flavors.map((flavor, i) => (
+                      <img
+                        key={`${color}-${flavor}-${i}`}
+                        src={`/ice_${flavor}.png`}
+                        alt=""
+                        className="h-9 -mb-3 select-none"
+                        style={{ zIndex: i + 1 }}
+                      />
+                    ))}
+                  </div>
                 </div>
-              ),
-            )}
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="grow relative overflow-hidden" ref={reactFlowWrapper}>
+      <div
+        className="absolute inset-x-0 top-0 bottom-50 overflow-hidden"
+        ref={reactFlowWrapper}
+      >
         <ReactFlow
           nodes={nodes}
           edges={edges}
           nodeTypes={nodeTypes}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          onDrop={onDrop}
-          onDragOver={onDragOver}
+          onNodesChange={isAnimating ? undefined : onNodesChange}
+          onEdgesChange={isAnimating ? undefined : onEdgesChange}
+          onConnect={isAnimating ? undefined : onConnect}
+          onDrop={isAnimating ? undefined : onDrop}
+          onDragOver={isAnimating ? undefined : onDragOver}
+          nodesDraggable={!isAnimating}
+          nodesConnectable={!isAnimating}
+          elementsSelectable={!isAnimating}
+          panOnDrag={!isAnimating}
+          zoomOnScroll={!isAnimating}
+          zoomOnPinch={!isAnimating}
+          zoomOnDoubleClick={!isAnimating}
           defaultEdgeOptions={{
             type: "straight",
             style: {
@@ -1104,9 +1186,7 @@ function StageInner({
             <ConeStack color={cone.color} stack={cone.stack} />
           </div>
         ))}
-
-        {/* Result palette (floating inside canvas) */}
-        <div className="absolute top-3 right-3 w-40 bg-white/90 backdrop-blur-sm rounded-lg border-2 border-gray-300 shadow-lg flex flex-col p-3 gap-3 z-10 max-h-[calc(100%-24px)] overflow-y-auto">
+        <div className="absolute top-1/4 right-3 w-40 bg-white/90 backdrop-blur-sm rounded-lg border-2 border-gray-300 shadow-lg flex flex-col p-3 gap-3 z-10 max-h-[calc(100%-24px)] overflow-y-auto">
           <div className="font-[DotGothic16] text-sm text-center text-gray-600">
             けっか
           </div>
@@ -1145,7 +1225,6 @@ function StageInner({
           })}
         </div>
       </div>
-
       {/* Transit cones (flying to palette) */}
       {transitConeRenders.map((cone) => (
         <div
@@ -1161,8 +1240,7 @@ function StageInner({
           <ConeStack color={cone.color} stack={cone.stack} />
         </div>
       ))}
-
-      <div className="bg-amber-50 h-50 flex items-center gap-4 px-4 overflow-x-auto border-t-2 border-orange-200 flex-none">
+      <div className="absolute inset-x-0 bottom-0 bg-amber-50 h-50 flex items-center gap-4 px-4 overflow-x-auto border-t-2 border-orange-200">
         {stageData.components.map((component: Component, index: number) => {
           if (!remainedComponentIdxs.includes(index)) return;
 
@@ -1207,7 +1285,7 @@ function StageInner({
                 </div>
               )}
               {overlayNumber !== undefined && (
-                <div className="absolute bottom-23 left-9 font-bold text-base pointer-events-none">
+                <div className="absolute bottom-23 left-9 font-bold text-base pointer-events-none font-[DotGothic16]">
                   <span className="text-2xl">{overlayNumber}</span>コ
                   <ruby>
                     以上
@@ -1228,7 +1306,20 @@ function StageInner({
           onClick={handleExecute}
           disabled={isAnimating}
         >
-          {isAnimating ? "実行中..." : "実行"}
+          {isAnimating ? (
+            <span>
+              <ruby>
+                実行中
+                <rt>じっこうちゅう</rt>
+              </ruby>
+              ...
+            </span>
+          ) : (
+            <ruby>
+              実行
+              <rt>じっこう</rt>
+            </ruby>
+          )}
         </button>
       </div>
 
@@ -1253,7 +1344,10 @@ function StageInner({
                   className="pixel-btn"
                   onClick={() => handleNavigate(`/stage/${stageId + 1}`)}
                 >
-                  次のステージへ →
+                  <ruby>
+                    次<rt>つぎ</rt>
+                  </ruby>
+                  のステージへ →
                 </button>
               )}
               <button
@@ -1261,7 +1355,12 @@ function StageInner({
                 className="pixel-btn pixel-btn-secondary"
                 onClick={() => handleNavigate("/select-stage")}
               >
-                ステージ選択にもどる
+                ステージ
+                <ruby>
+                  選択
+                  <rt>せんたく</rt>
+                </ruby>
+                にもどる
               </button>
             </div>
           </div>
@@ -1281,13 +1380,26 @@ export default function Stage({ params }: Route.ComponentProps) {
       <div className="w-full h-full bg-amber-100 flex items-center justify-center">
         <div className="text-center">
           <p className="text-xl font-bold mb-4">
-            ステージが見つかりませんでした
+            ステージが
+            <ruby>
+              見<rt>み</rt>
+            </ruby>
+            つかりませんでした
           </p>
           <button
             className="bg-orange-400 px-4 py-2 rounded text-white"
             onClick={() => navigate("/select-stage")}
           >
-            ステージ選択へ戻る
+            ステージ
+            <ruby>
+              選択
+              <rt>せんたく</rt>
+            </ruby>
+            へ
+            <ruby>
+              戻<rt>もど</rt>
+            </ruby>
+            る
           </button>
         </div>
       </div>
