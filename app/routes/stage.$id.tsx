@@ -127,15 +127,19 @@ function StartNode() {
 function StraightNode({ data, selected }: NodeProps<AppNode>) {
   return (
     <div className="flex flex-col items-center relative">
-      {selected && data.onDelete && (
-        <button
-          type="button"
-          className="pixel-btn pixel-btn-small absolute -top-10 left-1/2 transform -translate-x-1/2 z-10"
-          onClick={data.onDelete}
-        >
-          削除
-        </button>
-      )}
+      <button
+        type="button"
+        className={`pixel-btn pixel-btn-small absolute -top-0 -right-10 z-10 ${
+          selected && data.onDelete
+            ? "opacity-100 pointer-events-auto"
+            : "opacity-0 pointer-events-none"
+        }`}
+        style={{ fontSize: "0.75rem", padding: "0.25rem 0.5rem", lineHeight: 1 }}
+        onClick={() => data.onDelete?.()}
+        aria-label="ノードを削除"
+      >
+        ×
+      </button>
       <div className="bg-amber-100 rounded-sm border border-amber-500 h-24 w-24 flex items-center justify-center relative">
         {data.src ? (
           <img src={data.src} alt="" className="h-16" />
@@ -170,15 +174,19 @@ function StraightNode({ data, selected }: NodeProps<AppNode>) {
 function SplitNode({ data, selected }: NodeProps<AppNode>) {
   return (
     <div className="flex flex-col items-center relative">
-      {selected && data.onDelete && (
-        <button
-          type="button"
-          className="pixel-btn pixel-btn-small absolute -top-10 left-1/2 transform -translate-x-1/2 z-10"
-          onClick={data.onDelete}
-        >
-          削除
-        </button>
-      )}
+      <button
+        type="button"
+        className={`pixel-btn pixel-btn-small absolute -top-0 -right-15 z-10 ${
+          selected && data.onDelete
+            ? "opacity-100 pointer-events-auto"
+            : "opacity-0 pointer-events-none"
+        }`}
+        style={{ fontSize: "0.75rem", padding: "0.25rem 0.5rem", lineHeight: 1 }}
+        onClick={() => data.onDelete?.()}
+        aria-label="ノードを削除"
+      >
+        ×
+      </button>
       <div className="bg-amber-100 rounded-sm border border-amber-500 h-36 w-36 flex items-center justify-center relative">
         {data.src ? (
           <img src={data.src} alt="" className="h-30" />
@@ -641,9 +649,10 @@ function StageInner({
               <button
                 type="button"
                 className="pixel-btn pixel-btn-small"
+                style={{ fontSize: "0.75rem", padding: "0.25rem 0.5rem", lineHeight: 1 }}
                 onClick={() => setEdges((edges) => edges.filter((e) => e.id !== id))}
               >
-                削除
+                ×
               </button>
             </div>
           </foreignObject>
@@ -1188,6 +1197,7 @@ function StageInner({
           onDrop={onDrop}
           onDragOver={onDragOver}
           onNodeDragStop={onNodeDragStop}
+          nodeDragThreshold={5}
           autoPanOnNodeDrag={false}
           deleteKeyCode={null}
           defaultEdgeOptions={{
@@ -1199,7 +1209,7 @@ function StageInner({
             },
           }}
           connectionLineType={ConnectionLineType.Straight}
-          defaultViewport={{ x: 20, y: 200, zoom: 1 }}
+          defaultViewport={{ x: 20, y: 100, zoom: 1 }}
         >
         </ReactFlow>
 
