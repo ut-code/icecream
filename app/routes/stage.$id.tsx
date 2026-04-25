@@ -124,14 +124,14 @@ function StartNode() {
   );
 }
 
-function StraightNode({ data, selected }: NodeProps<AppNode>) {
+function StraightNode({ data }: NodeProps<AppNode>) {
   return (
-    <div className="flex flex-col items-center relative">
+    <div className="group flex flex-col items-center relative">
       <button
         type="button"
         className={`pixel-btn pixel-btn-small absolute -top-0 -right-10 z-10 ${
-          selected && data.onDelete
-            ? "opacity-100 pointer-events-auto"
+          data.onDelete
+            ? "opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto"
             : "opacity-0 pointer-events-none"
         }`}
         style={{ fontSize: "0.75rem", padding: "0.25rem 0.5rem", lineHeight: 1 }}
@@ -171,14 +171,14 @@ function StraightNode({ data, selected }: NodeProps<AppNode>) {
   );
 }
 
-function SplitNode({ data, selected }: NodeProps<AppNode>) {
+function SplitNode({ data }: NodeProps<AppNode>) {
   return (
-    <div className="flex flex-col items-center relative">
+    <div className="group flex flex-col items-center relative">
       <button
         type="button"
         className={`pixel-btn pixel-btn-small absolute -top-0 -right-15 z-10 ${
-          selected && data.onDelete
-            ? "opacity-100 pointer-events-auto"
+          data.onDelete
+            ? "opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto"
             : "opacity-0 pointer-events-none"
         }`}
         style={{ fontSize: "0.75rem", padding: "0.25rem 0.5rem", lineHeight: 1 }}
