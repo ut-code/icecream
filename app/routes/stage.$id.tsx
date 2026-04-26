@@ -614,56 +614,77 @@ function StageInner({
     FlyingConeRender[]
   >([]);
   const [paletteEntries, setPaletteEntries] = useState<PaletteEntry[]>([]);
+  const [hoveredEdgeId, setHoveredEdgeId] = useState<string | null>(null);
   const nodeTypes = useMemo(
     () => ({ start: StartNode, straight: StraightNode, split: SplitNode }),
     [],
   );
 
-  function CustomEdge({ id, sourceX, sourceY, targetX, targetY, selected, style }: EdgeProps) {
+  function CustomEdge({ id, sourceX, sourceY, targetX, targetY, style }: EdgeProps) {
     const [edgePath] = getStraightPath({ sourceX, sourceY, targetX, targetY });
     const midX = (sourceX + targetX) / 2;
     const midY = (sourceY + targetY) / 2;
     const buttonWidth = 60;
     const buttonHeight = 24;
+    const isDeleteVisible = hoveredEdgeId === id;
 
     return (
       <>
         <BaseEdge path={edgePath} style={style} />
-        {selected && (
-          <foreignObject
-            x={midX - buttonWidth / 2}
-            y={midY - buttonHeight - 8}
-            width={buttonWidth}
-            height={buttonHeight}
-            style={{ overflow: "visible" }}
+        <path
+          d={edgePath}
+          fill="none"
+          stroke="transparent"
+          strokeWidth={24}
+          onMouseEnter={() => setHoveredEdgeId(id)}
+          onMouseMove={() => setHoveredEdgeId(id)}
+          onMouseLeave={() => {
+            setHoveredEdgeId((prev) => (prev === id ? null : prev));
+          }}
+          style={{ pointerEvents: "stroke" }}
+        />
+        <foreignObject
+          x={midX - buttonWidth / 2}
+          y={midY - buttonHeight - 8}
+          width={buttonWidth}
+          height={buttonHeight}
+          onMouseEnter={() => setHoveredEdgeId(id)}
+          onMouseLeave={() => {
+            setHoveredEdgeId((prev) => (prev === id ? null : prev));
+          }}
+          style={{
+            overflow: "visible",
+            opacity: isDeleteVisible ? 1 : 0,
+            pointerEvents: isDeleteVisible ? "auto" : "none",
+          }}
+        >
+          <div
+            style={{
+              width: "100%",
+              height: "100%",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
           >
-            <div
-              style={{
-                width: "100%",
-                height: "100%",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
+            <button
+              type="button"
+              className="pixel-btn pixel-btn-small"
+              style={{ fontSize: "0.75rem", padding: "0.25rem 0.5rem", lineHeight: 1 }}
+              onClick={() => setEdges((edges) => edges.filter((e) => e.id !== id))}
+              aria-label="エッジを削除"
             >
-              <button
-                type="button"
-                className="pixel-btn pixel-btn-small"
-                style={{ fontSize: "0.75rem", padding: "0.25rem 0.5rem", lineHeight: 1 }}
-                onClick={() => setEdges((edges) => edges.filter((e) => e.id !== id))}
-              >
-                ×
-              </button>
-            </div>
-          </foreignObject>
-        )}
+              ×
+            </button>
+          </div>
+        </foreignObject>
       </>
     );
   }
 
   const edgeTypes = useMemo(
     () => ({ custom: CustomEdge }),
-    [],
+    [hoveredEdgeId],
   );
 
   const onConnect: OnConnect = useCallback(
@@ -1193,6 +1214,10 @@ function StageInner({
           edgeTypes={edgeTypes}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
+          onEdgeMouseEnter={(_event, edge) => setHoveredEdgeId(edge.id)}
+          onEdgeMouseLeave={(_event, edge) =>
+            setHoveredEdgeId((prev) => (prev === edge.id ? null : prev))
+          }
           onConnect={onConnect}
           onDrop={onDrop}
           onDragOver={onDragOver}
