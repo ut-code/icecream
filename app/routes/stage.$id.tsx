@@ -8,7 +8,6 @@ import {
   addEdge,
   useNodesState,
   useEdgesState,
-  Controls,
   useReactFlow,
   Handle,
   Position,
@@ -17,6 +16,10 @@ import {
   type OnConnect,
   type Edge,
   ConnectionLineType,
+  BaseEdge,
+  getStraightPath,
+  type EdgeProps,
+  type OnNodeDrag,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import type { ConeColor, Flavor, StageData } from "~/stages";
@@ -37,6 +40,7 @@ type AppNode = Node<{
   overlayNumber?: number;
   component: Component;
   componentIndex: number;
+  onDelete?: () => void;
 }>;
 
 const HANDLE_CLASS = "!w-3 !h-3 !bg-gray-500 !border-2 !border-gray-800";
@@ -130,7 +134,28 @@ function StartNode() {
 
 function StraightNode({ data }: NodeProps<AppNode>) {
   return (
-    <div className="flex flex-col items-center">
+    <div className="group flex flex-col items-center relative">
+      <button
+        type="button"
+        className={`pixel-btn pixel-btn-small absolute -top-0 -right-10 z-10 ${
+          data.onDelete
+            ? "opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto"
+            : "opacity-0 pointer-events-none"
+        }`}
+        style={{ fontSize: "0.75rem", padding: "0.25rem 0.5rem", lineHeight: 1 }}
+        onClick={() => data.onDelete?.()}
+        aria-label="ノードを削除"
+      >
+        ×
+      </button>
+      <StraightNodeVisual data={data} />
+    </div>
+  );
+}
+
+function StraightNodeVisual({ data }: { data: AppNode["data"] }) {
+  return (
+    <div className="flex flex-col items-center relative">
       <div className="bg-amber-100 rounded-sm border border-amber-500 h-24 w-24 flex items-center justify-center relative">
         {data.src ? (
           <img src={data.src} alt="" className="h-16" />
@@ -164,7 +189,28 @@ function StraightNode({ data }: NodeProps<AppNode>) {
 
 function SplitNode({ data }: NodeProps<AppNode>) {
   return (
-    <div className="flex flex-col items-center">
+    <div className="group flex flex-col items-center relative">
+      <button
+        type="button"
+        className={`pixel-btn pixel-btn-small absolute -top-0 -right-15 z-10 ${
+          data.onDelete
+            ? "opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto"
+            : "opacity-0 pointer-events-none"
+        }`}
+        style={{ fontSize: "0.75rem", padding: "0.25rem 0.5rem", lineHeight: 1 }}
+        onClick={() => data.onDelete?.()}
+        aria-label="ノードを削除"
+      >
+        ×
+      </button>
+      <SplitNodeVisual data={data} />
+    </div>
+  );
+}
+
+function SplitNodeVisual({ data }: { data: AppNode["data"] }) {
+  return (
+    <div className="flex flex-col items-center relative">
       <div className="bg-amber-100 rounded-sm border border-amber-500 h-36 w-36 flex items-center justify-center relative">
         {data.src ? (
           <img src={data.src} alt="" className="h-30" />
@@ -328,6 +374,14 @@ type TransitCone = {
 type PaletteEntry = {
   color: ConeColor;
   stack: Flavor[];
+};
+
+type DragOverlayNode = {
+  id: string;
+  type: AppNode["type"];
+  data: AppNode["data"];
+  x: number;
+  y: number;
 };
 
 type AnimState = {
@@ -558,10 +612,6 @@ function StageInner({
 }) {
   const navigate = useNavigate();
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
-  const nodeTypes = useMemo(
-    () => ({ start: StartNode, straight: StraightNode, split: SplitNode }),
-    [],
-  );
   const [remainedComponentIdxs, setRemainedComponentIdxs] = useState<number[]>([
     ...Array(stageData.components.length).keys(),
   ]);
@@ -591,21 +641,115 @@ function StageInner({
   const animRef = useRef<AnimState | null>(null);
   const rafRef = useRef<number | null>(null);
   const outerContainerRef = useRef<HTMLDivElement>(null);
+  const paletteTrayRef = useRef<HTMLDivElement>(null);
   const paletteSlotRefs = useRef<Map<ConeColor, HTMLDivElement>>(new Map());
   const [transitConeRenders, setTransitConeRenders] = useState<
     FlyingConeRender[]
   >([]);
   const [paletteEntries, setPaletteEntries] = useState<PaletteEntry[]>([]);
+  const [hoveredEdgeId, setHoveredEdgeId] = useState<string | null>(null);
+  const [dragOverlayNode, setDragOverlayNode] = useState<DragOverlayNode | null>(null);
+  const nodeTypes = useMemo(
+    () => ({ start: StartNode, straight: StraightNode, split: SplitNode }),
+    [],
+  );
+
+  function CustomEdge({ id, sourceX, sourceY, targetX, targetY, style }: EdgeProps) {
+    const [edgePath] = getStraightPath({ sourceX, sourceY, targetX, targetY });
+    const midX = (sourceX + targetX) / 2;
+    const midY = (sourceY + targetY) / 2;
+    const buttonWidth = 60;
+    const buttonHeight = 24;
+    const isDeleteVisible = !isAnimating && hoveredEdgeId === id;
+
+    return (
+      <>
+        <BaseEdge path={edgePath} style={style} />
+        <path
+          d={edgePath}
+          fill="none"
+          stroke="transparent"
+          strokeWidth={24}
+          onMouseEnter={() => setHoveredEdgeId(id)}
+          onMouseMove={() => setHoveredEdgeId(id)}
+          onMouseLeave={() => {
+            setHoveredEdgeId((prev) => (prev === id ? null : prev));
+          }}
+          style={{ pointerEvents: "stroke" }}
+        />
+        <foreignObject
+          x={midX - buttonWidth / 2}
+          y={midY - buttonHeight - 8}
+          width={buttonWidth}
+          height={buttonHeight}
+          onMouseEnter={() => setHoveredEdgeId(id)}
+          onMouseLeave={() => {
+            setHoveredEdgeId((prev) => (prev === id ? null : prev));
+          }}
+          style={{
+            overflow: "visible",
+            opacity: isDeleteVisible ? 1 : 0,
+            pointerEvents: isDeleteVisible ? "auto" : "none",
+          }}
+        >
+          <div
+            style={{
+              width: "100%",
+              height: "100%",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <button
+              type="button"
+              className="pixel-btn pixel-btn-small"
+              style={{ fontSize: "0.75rem", padding: "0.25rem 0.5rem", lineHeight: 1 }}
+              onClick={() => {
+                if (isAnimating) return;
+                setEdges((edges) => edges.filter((e) => e.id !== id));
+              }}
+              aria-label="エッジを削除"
+            >
+              ×
+            </button>
+          </div>
+        </foreignObject>
+      </>
+    );
+  }
+
+  const edgeTypes = useMemo(
+    () => ({ custom: CustomEdge }),
+    [hoveredEdgeId],
+  );
+
+  const renderedNodes = useMemo(
+    () =>
+      nodes.map((node) => {
+        if (node.id !== dragOverlayNode?.id) return node;
+        return {
+          ...node,
+          style: {
+            ...node.style,
+            opacity: 0,
+          },
+        };
+      }),
+    [nodes, dragOverlayNode?.id],
+  );
 
   const onConnect: OnConnect = useCallback(
     (params) => {
+      const style = { stroke: "#6b7280", strokeWidth: 10, strokeLinecap: "round" as const };
+
       setEdges((eds) => {
         const sourceNode = nodes.find((n) => n.id === params.source);
         const isSplitNode = sourceNode?.type === "split";
 
         if (isSplitNode) {
           return addEdge(
-            params,
+            { ...params, style },
             eds.filter(
               (e) =>
                 !(
@@ -616,7 +760,7 @@ function StageInner({
           );
         } else {
           return addEdge(
-            params,
+            { ...params, style },
             eds.filter((e) => e.source !== params.source),
           );
         }
@@ -639,6 +783,97 @@ function StageInner({
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
   }, []);
+
+  const onNodeDragStart: OnNodeDrag<AppNode> = useCallback(
+    (_event, node) => {
+      if (node.id === "start") return;
+      if (!outerContainerRef.current || !reactFlowWrapper.current) return;
+
+      const outerRect = outerContainerRef.current.getBoundingClientRect();
+      const wrapperRect = reactFlowWrapper.current.getBoundingClientRect();
+      const viewport = getViewport();
+
+      setDragOverlayNode({
+        id: node.id,
+        type: node.type,
+        data: node.data,
+        x:
+          wrapperRect.left -
+          outerRect.left +
+          node.position.x * viewport.zoom +
+          viewport.x,
+        y:
+          wrapperRect.top -
+          outerRect.top +
+          node.position.y * viewport.zoom +
+          viewport.y,
+      });
+    },
+    [getViewport],
+  );
+
+  const onNodeDrag: OnNodeDrag<AppNode> = useCallback(
+    (_event, node) => {
+      if (node.id === "start") return;
+      if (!outerContainerRef.current || !reactFlowWrapper.current) return;
+
+      const outerRect = outerContainerRef.current.getBoundingClientRect();
+      const wrapperRect = reactFlowWrapper.current.getBoundingClientRect();
+      const viewport = getViewport();
+
+      setDragOverlayNode({
+        id: node.id,
+        type: node.type,
+        data: node.data,
+        x:
+          wrapperRect.left -
+          outerRect.left +
+          node.position.x * viewport.zoom +
+          viewport.x,
+        y:
+          wrapperRect.top -
+          outerRect.top +
+          node.position.y * viewport.zoom +
+          viewport.y,
+      });
+    },
+    [getViewport],
+  );
+
+  const removePlacedNode = useCallback(
+    (nodeId: string, componentIndex: number) => {
+      setNodes((prev) => prev.filter((n) => n.id !== nodeId));
+      setEdges((prev) =>
+        prev.filter((e) => e.source !== nodeId && e.target !== nodeId),
+      );
+      setRemainedComponentIdxs((prev) => {
+        if (prev.includes(componentIndex)) return prev;
+        return [...prev, componentIndex].sort((a, b) => a - b);
+      });
+    },
+    [setNodes, setEdges, setRemainedComponentIdxs],
+  );
+
+  const onNodeDragStop: OnNodeDrag<AppNode> = useCallback(
+    (_event, node) => {
+      setDragOverlayNode(null);
+      if (node.id === "start") return;
+      if (!paletteTrayRef.current || !reactFlowWrapper.current) return;
+
+      const trayTop = paletteTrayRef.current.getBoundingClientRect().top;
+      const wrapperTop = reactFlowWrapper.current.getBoundingClientRect().top;
+      const viewport = getViewport();
+      const nodeHeight = node.type === "split" ? 176 : 120;
+
+      const nodeTop = wrapperTop + node.position.y * viewport.zoom + viewport.y;
+      const nodeBottom = nodeTop + nodeHeight * viewport.zoom;
+
+      if (nodeBottom >= trayTop) {
+        removePlacedNode(node.id, node.data.componentIndex);
+      }
+    },
+    [getViewport, removePlacedNode],
+  );
 
   const onDrop = useCallback(
     (e: React.DragEvent) => {
@@ -672,8 +907,9 @@ function StageInner({
       const { src, overlaySrc, overlaySrcs, overlayNumber } =
         getComponentSrc(component);
 
+      const id = getId();
       const newNode: AppNode = {
-        id: getId(),
+        id,
         type: component.type === "if" ? "split" : "straight",
         position: centeredPosition,
         data: {
@@ -684,12 +920,15 @@ function StageInner({
           overlayNumber,
           component,
           componentIndex,
+          onDelete: () => {
+            removePlacedNode(id, componentIndex);
+          },
         },
       };
 
       setNodes((nds) => nds.concat(newNode));
     },
-    [screenToFlowPosition, setNodes],
+    [removePlacedNode, screenToFlowPosition, setNodes],
   );
 
   const generateComponents = (
@@ -1144,11 +1383,17 @@ function StageInner({
         ref={reactFlowWrapper}
       >
         <ReactFlow
-          nodes={nodes}
+          className="stage-flow"
+          nodes={renderedNodes}
           edges={edges}
           nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
           onNodesChange={isAnimating ? undefined : onNodesChange}
           onEdgesChange={isAnimating ? undefined : onEdgesChange}
+          onEdgeMouseEnter={(_event, edge) => setHoveredEdgeId(edge.id)}
+          onEdgeMouseLeave={(_event, edge) =>
+            setHoveredEdgeId((prev) => (prev === edge.id ? null : prev))
+          }
           onConnect={isAnimating ? undefined : onConnect}
           onDrop={isAnimating ? undefined : onDrop}
           onDragOver={isAnimating ? undefined : onDragOver}
@@ -1159,17 +1404,23 @@ function StageInner({
           zoomOnScroll={!isAnimating}
           zoomOnPinch={!isAnimating}
           zoomOnDoubleClick={!isAnimating}
+          onNodeDrag={onNodeDrag}
+          onNodeDragStart={onNodeDragStart}
+          onNodeDragStop={onNodeDragStop}
+          nodeDragThreshold={5}
+          autoPanOnNodeDrag={false}
+          deleteKeyCode={null}
           defaultEdgeOptions={{
-            type: "straight",
+            type: "custom",
+            selectable: true,
             style: {
               strokeWidth: 10,
               strokeLinecap: "round",
             },
           }}
           connectionLineType={ConnectionLineType.Straight}
-          defaultViewport={{ x: 20, y: 200, zoom: 1 }}
+          defaultViewport={{ x: 20, y: 100, zoom: 1 }}
         >
-          <Controls />
         </ReactFlow>
 
         {flyingCones.map((cone) => (
@@ -1225,6 +1476,24 @@ function StageInner({
           })}
         </div>
       </div>
+
+      {dragOverlayNode && (
+        <div
+          className="absolute pointer-events-none z-30"
+          style={{
+            left: dragOverlayNode.x,
+            top: dragOverlayNode.y,
+            transform: "translate(0, 0)",
+          }}
+        >
+          {dragOverlayNode.type === "split" ? (
+            <SplitNodeVisual data={dragOverlayNode.data} />
+          ) : (
+            <StraightNodeVisual data={dragOverlayNode.data} />
+          )}
+        </div>
+      )}
+
       {/* Transit cones (flying to palette) */}
       {transitConeRenders.map((cone) => (
         <div
@@ -1240,7 +1509,11 @@ function StageInner({
           <ConeStack color={cone.color} stack={cone.stack} />
         </div>
       ))}
-      <div className="absolute inset-x-0 bottom-0 bg-amber-50 h-50 flex items-center gap-4 px-4 overflow-x-auto border-t-2 border-orange-200">
+
+      <div
+        className="absolute inset-x-0 bottom-0 bg-amber-50 h-50 flex items-center gap-4 px-4 overflow-x-auto border-t-2 border-orange-200 z-10"
+        ref={paletteTrayRef}
+      >
         {stageData.components.map((component: Component, index: number) => {
           if (!remainedComponentIdxs.includes(index)) return;
 
@@ -1299,7 +1572,7 @@ function StageInner({
       </div>
 
       {/* Execute button */}
-      <div className="absolute bottom-6 right-6">
+      <div className="absolute bottom-6 right-6 z-40">
         <button
           type="button"
           className="pixel-btn"
@@ -1325,7 +1598,7 @@ function StageInner({
 
       {/* Fail message */}
       {failMessage && (
-        <div className="absolute bottom-20 right-6 bg-red-200 border-2 border-red-500 px-4 py-2 rounded font-[DotGothic16]">
+        <div className="absolute bottom-20 right-6 z-40 bg-red-200 border-2 border-red-500 px-4 py-2 rounded font-[DotGothic16]">
           {failMessage}
         </div>
       )}
