@@ -110,8 +110,8 @@ const personDecorations = [
   {
     src: "/if_true.png",
     alt: "If True Character",
-    top: "49%",
-    left: "16rem",
+    top: "47%",
+    left: "18rem",
     width: 76,
   },
   {
