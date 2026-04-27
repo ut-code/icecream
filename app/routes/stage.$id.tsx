@@ -1519,7 +1519,7 @@ function StageInner({
       </div>
 
       {/* Execute button */}
-      <div className="absolute bottom-6 right-6">
+      <div className="absolute bottom-6 right-6 z-40">
         <button
           type="button"
           className="pixel-btn"
@@ -1532,7 +1532,7 @@ function StageInner({
 
       {/* Fail message */}
       {failMessage && (
-        <div className="absolute bottom-20 right-6 bg-red-200 border-2 border-red-500 px-4 py-2 rounded font-[DotGothic16]">
+        <div className="absolute bottom-20 right-6 z-40 bg-red-200 border-2 border-red-500 px-4 py-2 rounded font-[DotGothic16]">
           {failMessage}
         </div>
       )}
