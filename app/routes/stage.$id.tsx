@@ -635,7 +635,7 @@ function StageInner({
     const midY = (sourceY + targetY) / 2;
     const buttonWidth = 60;
     const buttonHeight = 24;
-    const isDeleteVisible = hoveredEdgeId === id;
+    const isDeleteVisible = !isAnimating && hoveredEdgeId === id;
 
     return (
       <>
@@ -680,7 +680,10 @@ function StageInner({
               type="button"
               className="pixel-btn pixel-btn-small"
               style={{ fontSize: "0.75rem", padding: "0.25rem 0.5rem", lineHeight: 1 }}
-              onClick={() => setEdges((edges) => edges.filter((e) => e.id !== id))}
+              onClick={() => {
+                if (isAnimating) return;
+                setEdges((edges) => edges.filter((e) => e.id !== id));
+              }}
               aria-label="エッジを削除"
             >
               ×
@@ -1287,22 +1290,32 @@ function StageInner({
         </div>
       </div>
 
-      <div className="grow relative overflow-visible z-0" ref={reactFlowWrapper}>
+      <div
+        className="absolute inset-x-0 top-0 bottom-50 overflow-hidden"
+        ref={reactFlowWrapper}
+      >
         <ReactFlow
           className="stage-flow"
           nodes={renderedNodes}
           edges={edges}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
+          onNodesChange={isAnimating ? undefined : onNodesChange}
+          onEdgesChange={isAnimating ? undefined : onEdgesChange}
           onEdgeMouseEnter={(_event, edge) => setHoveredEdgeId(edge.id)}
           onEdgeMouseLeave={(_event, edge) =>
             setHoveredEdgeId((prev) => (prev === edge.id ? null : prev))
           }
-          onConnect={onConnect}
-          onDrop={onDrop}
-          onDragOver={onDragOver}
+          onConnect={isAnimating ? undefined : onConnect}
+          onDrop={isAnimating ? undefined : onDrop}
+          onDragOver={isAnimating ? undefined : onDragOver}
+          nodesDraggable={!isAnimating}
+          nodesConnectable={!isAnimating}
+          elementsSelectable={!isAnimating}
+          panOnDrag={!isAnimating}
+          zoomOnScroll={!isAnimating}
+          zoomOnPinch={!isAnimating}
+          zoomOnDoubleClick={!isAnimating}
           onNodeDrag={onNodeDrag}
           onNodeDragStart={onNodeDragStart}
           onNodeDragStop={onNodeDragStop}
@@ -1458,7 +1471,7 @@ function StageInner({
       ))}
 
       <div
-        className="bg-amber-50 h-50 flex items-center gap-4 px-4 overflow-x-auto border-t-2 border-orange-200 flex-none relative z-10"
+        className="absolute inset-x-0 bottom-0 bg-amber-50 h-50 flex items-center gap-4 px-4 overflow-x-auto border-t-2 border-orange-200 z-10"
         ref={paletteTrayRef}
       >
         {stageData.components.map((component: Component, index: number) => {
