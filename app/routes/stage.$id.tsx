@@ -615,6 +615,7 @@ function StageInner({
   >([]);
   const [paletteEntries, setPaletteEntries] = useState<PaletteEntry[]>([]);
   const [hoveredEdgeId, setHoveredEdgeId] = useState<string | null>(null);
+  const [isDraggingPlacedNode, setIsDraggingPlacedNode] = useState(false);
   const nodeTypes = useMemo(
     () => ({ start: StartNode, straight: StraightNode, split: SplitNode }),
     [],
@@ -732,6 +733,11 @@ function StageInner({
     event.dataTransfer.dropEffect = "move";
   }, []);
 
+  const onNodeDragStart: OnNodeDrag<AppNode> = useCallback((_event, node) => {
+    if (node.id === "start") return;
+    setIsDraggingPlacedNode(true);
+  }, []);
+
   const removePlacedNode = useCallback(
     (nodeId: string, componentIndex: number) => {
       setNodes((prev) => prev.filter((n) => n.id !== nodeId));
@@ -748,6 +754,7 @@ function StageInner({
 
   const onNodeDragStop: OnNodeDrag<AppNode> = useCallback(
     (_event, node) => {
+      setIsDraggingPlacedNode(false);
       if (node.id === "start") return;
       if (!paletteTrayRef.current || !reactFlowWrapper.current) return;
 
@@ -1206,8 +1213,12 @@ function StageInner({
         </div>
       </div>
 
-      <div className="grow relative overflow-hidden" ref={reactFlowWrapper}>
+      <div
+        className={`grow relative overflow-visible ${isDraggingPlacedNode ? "z-20" : "z-0"}`}
+        ref={reactFlowWrapper}
+      >
         <ReactFlow
+          className="stage-flow"
           nodes={nodes}
           edges={edges}
           nodeTypes={nodeTypes}
@@ -1221,6 +1232,7 @@ function StageInner({
           onConnect={onConnect}
           onDrop={onDrop}
           onDragOver={onDragOver}
+          onNodeDragStart={onNodeDragStart}
           onNodeDragStop={onNodeDragStop}
           nodeDragThreshold={5}
           autoPanOnNodeDrag={false}
@@ -1311,7 +1323,7 @@ function StageInner({
       ))}
 
       <div
-        className="bg-amber-50 h-50 flex items-center gap-4 px-4 overflow-x-auto border-t-2 border-orange-200 flex-none"
+        className="bg-amber-50 h-50 flex items-center gap-4 px-4 overflow-x-auto border-t-2 border-orange-200 flex-none relative z-10"
         ref={paletteTrayRef}
       >
         {stageData.components.map((component: Component, index: number) => {
