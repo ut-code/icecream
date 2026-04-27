@@ -145,6 +145,7 @@ body {
 
 img {
   image-rendering: pixelated;
+  -webkit-user-drag: none;
 }
 
 /* Keep dragged nodes visible even when crossing the bottom tray area. */
