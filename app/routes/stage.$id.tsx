@@ -352,6 +352,14 @@ type PaletteEntry = {
   stack: Flavor[];
 };
 
+type DragOverlayNode = {
+  id: string;
+  type: AppNode["type"];
+  data: AppNode["data"];
+  x: number;
+  y: number;
+};
+
 type AnimState = {
   cones: FlyingCone[];
   spawnQueue: { color: ConeColor; segments: AnimSegment[] }[];
@@ -615,7 +623,7 @@ function StageInner({
   >([]);
   const [paletteEntries, setPaletteEntries] = useState<PaletteEntry[]>([]);
   const [hoveredEdgeId, setHoveredEdgeId] = useState<string | null>(null);
-  const [isDraggingPlacedNode, setIsDraggingPlacedNode] = useState(false);
+  const [dragOverlayNode, setDragOverlayNode] = useState<DragOverlayNode | null>(null);
   const nodeTypes = useMemo(
     () => ({ start: StartNode, straight: StraightNode, split: SplitNode }),
     [],
@@ -688,6 +696,21 @@ function StageInner({
     [hoveredEdgeId],
   );
 
+  const renderedNodes = useMemo(
+    () =>
+      nodes.map((node) => {
+        if (node.id !== dragOverlayNode?.id) return node;
+        return {
+          ...node,
+          style: {
+            ...node.style,
+            opacity: 0,
+          },
+        };
+      }),
+    [nodes, dragOverlayNode?.id],
+  );
+
   const onConnect: OnConnect = useCallback(
     (params) => {
       const style = { stroke: "#6b7280", strokeWidth: 10, strokeLinecap: "round" as const };
@@ -733,10 +756,61 @@ function StageInner({
     event.dataTransfer.dropEffect = "move";
   }, []);
 
-  const onNodeDragStart: OnNodeDrag<AppNode> = useCallback((_event, node) => {
-    if (node.id === "start") return;
-    setIsDraggingPlacedNode(true);
-  }, []);
+  const onNodeDragStart: OnNodeDrag<AppNode> = useCallback(
+    (_event, node) => {
+      if (node.id === "start") return;
+      if (!outerContainerRef.current || !reactFlowWrapper.current) return;
+
+      const outerRect = outerContainerRef.current.getBoundingClientRect();
+      const wrapperRect = reactFlowWrapper.current.getBoundingClientRect();
+      const viewport = getViewport();
+
+      setDragOverlayNode({
+        id: node.id,
+        type: node.type,
+        data: node.data,
+        x:
+          wrapperRect.left -
+          outerRect.left +
+          node.position.x * viewport.zoom +
+          viewport.x,
+        y:
+          wrapperRect.top -
+          outerRect.top +
+          node.position.y * viewport.zoom +
+          viewport.y,
+      });
+    },
+    [getViewport],
+  );
+
+  const onNodeDrag: OnNodeDrag<AppNode> = useCallback(
+    (_event, node) => {
+      if (node.id === "start") return;
+      if (!outerContainerRef.current || !reactFlowWrapper.current) return;
+
+      const outerRect = outerContainerRef.current.getBoundingClientRect();
+      const wrapperRect = reactFlowWrapper.current.getBoundingClientRect();
+      const viewport = getViewport();
+
+      setDragOverlayNode({
+        id: node.id,
+        type: node.type,
+        data: node.data,
+        x:
+          wrapperRect.left -
+          outerRect.left +
+          node.position.x * viewport.zoom +
+          viewport.x,
+        y:
+          wrapperRect.top -
+          outerRect.top +
+          node.position.y * viewport.zoom +
+          viewport.y,
+      });
+    },
+    [getViewport],
+  );
 
   const removePlacedNode = useCallback(
     (nodeId: string, componentIndex: number) => {
@@ -754,7 +828,7 @@ function StageInner({
 
   const onNodeDragStop: OnNodeDrag<AppNode> = useCallback(
     (_event, node) => {
-      setIsDraggingPlacedNode(false);
+      setDragOverlayNode(null);
       if (node.id === "start") return;
       if (!paletteTrayRef.current || !reactFlowWrapper.current) return;
 
@@ -1213,13 +1287,10 @@ function StageInner({
         </div>
       </div>
 
-      <div
-        className={`grow relative overflow-visible ${isDraggingPlacedNode ? "z-20" : "z-0"}`}
-        ref={reactFlowWrapper}
-      >
+      <div className="grow relative overflow-visible z-0" ref={reactFlowWrapper}>
         <ReactFlow
           className="stage-flow"
-          nodes={nodes}
+          nodes={renderedNodes}
           edges={edges}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
@@ -1232,6 +1303,7 @@ function StageInner({
           onConnect={onConnect}
           onDrop={onDrop}
           onDragOver={onDragOver}
+          onNodeDrag={onNodeDrag}
           onNodeDragStart={onNodeDragStart}
           onNodeDragStop={onNodeDragStop}
           nodeDragThreshold={5}
@@ -1305,6 +1377,69 @@ function StageInner({
           })}
         </div>
       </div>
+
+      {dragOverlayNode && (
+        <div
+          className="absolute pointer-events-none z-30"
+          style={{
+            left: dragOverlayNode.x,
+            top: dragOverlayNode.y,
+            transform: "translate(0, 0)",
+          }}
+        >
+          {dragOverlayNode.type === "split" ? (
+            <div className="bg-amber-100 rounded-sm border border-amber-500 h-36 w-36 flex items-center justify-center relative">
+              {dragOverlayNode.data.src ? (
+                <img src={dragOverlayNode.data.src} alt="" className="h-30" />
+              ) : (
+                <span className="text-xs font-bold px-2 py-1">
+                  {dragOverlayNode.data.label}
+                </span>
+              )}
+              {dragOverlayNode.data.overlaySrc && (
+                <img
+                  src={dragOverlayNode.data.overlaySrc}
+                  alt=""
+                  className="absolute bottom-24 left-15 h-6"
+                />
+              )}
+              {dragOverlayNode.data.overlaySrcs && (
+                <div className="absolute bottom-23 left-15 flex flex-col-reverse">
+                  {dragOverlayNode.data.overlaySrcs.map((src, i) => (
+                    <img key={i} src={src} alt="" className="h-5 -mb-0.5" />
+                  ))}
+                </div>
+              )}
+              {dragOverlayNode.data.overlayNumber !== undefined && (
+                <div className="absolute bottom-23 left-9 font-bold text-base">
+                  <span className="text-2xl">{dragOverlayNode.data.overlayNumber}</span>コ
+                  <ruby>
+                    以上
+                    <rt>いじょう</rt>
+                  </ruby>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="bg-amber-100 rounded-sm border border-amber-500 h-24 w-24 flex items-center justify-center relative">
+              {dragOverlayNode.data.src ? (
+                <img src={dragOverlayNode.data.src} alt="" className="h-16" />
+              ) : (
+                <span className="text-xs font-bold px-2 py-1">
+                  {dragOverlayNode.data.label}
+                </span>
+              )}
+              {dragOverlayNode.data.overlaySrc && (
+                <img
+                  src={dragOverlayNode.data.overlaySrc}
+                  alt=""
+                  className="absolute bottom-10 left-2 h-5"
+                />
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Transit cones (flying to palette) */}
       {transitConeRenders.map((cone) => (
