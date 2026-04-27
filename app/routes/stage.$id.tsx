@@ -140,6 +140,14 @@ function StraightNode({ data }: NodeProps<AppNode>) {
       >
         ×
       </button>
+      <StraightNodeVisual data={data} />
+    </div>
+  );
+}
+
+function StraightNodeVisual({ data }: { data: AppNode["data"] }) {
+  return (
+    <div className="flex flex-col items-center relative">
       <div className="bg-amber-100 rounded-sm border border-amber-500 h-24 w-24 flex items-center justify-center relative">
         {data.src ? (
           <img src={data.src} alt="" className="h-16" />
@@ -187,6 +195,14 @@ function SplitNode({ data }: NodeProps<AppNode>) {
       >
         ×
       </button>
+      <SplitNodeVisual data={data} />
+    </div>
+  );
+}
+
+function SplitNodeVisual({ data }: { data: AppNode["data"] }) {
+  return (
+    <div className="flex flex-col items-center relative">
       <div className="bg-amber-100 rounded-sm border border-amber-500 h-36 w-36 flex items-center justify-center relative">
         {data.src ? (
           <img src={data.src} alt="" className="h-30" />
@@ -1401,55 +1417,9 @@ function StageInner({
           }}
         >
           {dragOverlayNode.type === "split" ? (
-            <div className="bg-amber-100 rounded-sm border border-amber-500 h-36 w-36 flex items-center justify-center relative">
-              {dragOverlayNode.data.src ? (
-                <img src={dragOverlayNode.data.src} alt="" className="h-30" />
-              ) : (
-                <span className="text-xs font-bold px-2 py-1">
-                  {dragOverlayNode.data.label}
-                </span>
-              )}
-              {dragOverlayNode.data.overlaySrc && (
-                <img
-                  src={dragOverlayNode.data.overlaySrc}
-                  alt=""
-                  className="absolute bottom-24 left-15 h-6"
-                />
-              )}
-              {dragOverlayNode.data.overlaySrcs && (
-                <div className="absolute bottom-23 left-15 flex flex-col-reverse">
-                  {dragOverlayNode.data.overlaySrcs.map((src, i) => (
-                    <img key={i} src={src} alt="" className="h-5 -mb-0.5" />
-                  ))}
-                </div>
-              )}
-              {dragOverlayNode.data.overlayNumber !== undefined && (
-                <div className="absolute bottom-23 left-9 font-bold text-base">
-                  <span className="text-2xl">{dragOverlayNode.data.overlayNumber}</span>コ
-                  <ruby>
-                    以上
-                    <rt>いじょう</rt>
-                  </ruby>
-                </div>
-              )}
-            </div>
+            <SplitNodeVisual data={dragOverlayNode.data} />
           ) : (
-            <div className="bg-amber-100 rounded-sm border border-amber-500 h-24 w-24 flex items-center justify-center relative">
-              {dragOverlayNode.data.src ? (
-                <img src={dragOverlayNode.data.src} alt="" className="h-16" />
-              ) : (
-                <span className="text-xs font-bold px-2 py-1">
-                  {dragOverlayNode.data.label}
-                </span>
-              )}
-              {dragOverlayNode.data.overlaySrc && (
-                <img
-                  src={dragOverlayNode.data.overlaySrc}
-                  alt=""
-                  className="absolute bottom-10 left-2 h-5"
-                />
-              )}
-            </div>
+            <StraightNodeVisual data={dragOverlayNode.data} />
           )}
         </div>
       )}
