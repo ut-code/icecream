@@ -1039,6 +1039,25 @@ function StageInner({
   const handleExecute = () => {
     if (isAnimating) return;
 
+    // Require all components to be placed before execution
+    if (remainedComponentIdxs.length > 0) {
+      setFailMessage(
+        <>
+          <ruby>
+            全員
+            <rt>ぜんいん</rt>
+          </ruby>
+          を使わないと
+          <ruby>
+            実行
+            <rt>じっこう</rt>
+          </ruby>
+          できません
+        </>,
+      );
+      return;
+    }
+
     const components = generateComponents(nodes, edges, stageData.components);
 
     const startEdge = edges.find((e) => e.source === "start");
@@ -1090,6 +1109,51 @@ function StageInner({
 
     const firstComponentId = firstNode.data.componentIndex;
     const colors = Object.keys(stageData.mission) as ConeColor[];
+    // Ensure every placed node is reachable from the start
+    // components keys are component indexes for placed nodes
+    const placedComponentIdxs = Object.keys(components).map((k) => Number(k));
+    const visited = new Set<number>();
+    const dfs = (ci: number | null) => {
+      if (ci === null || ci === undefined) return;
+      if (visited.has(ci)) return;
+      visited.add(ci);
+      const node = components[ci];
+      if (!node) return;
+      const ch = node.childrenIds;
+      if (!ch) return;
+      if (typeof ch === "object" && ("true" in ch || "false" in ch)) {
+        dfs((ch as { true: number | null; false: number | null }).true);
+        dfs((ch as { true: number | null; false: number | null }).false);
+      } else {
+        dfs(ch as number | null);
+      }
+    };
+
+    dfs(firstComponentId);
+
+    if (placedComponentIdxs.length !== visited.size) {
+      setFailMessage(
+        <>
+          <ruby>
+            全員
+            <rt>ぜんいん</rt>
+          </ruby>
+          を
+          <ruby>
+            使
+            <rt>つか</rt>
+          </ruby>
+          わないと
+          <ruby>
+            実行
+            <rt>じっこう</rt>
+          </ruby>
+          できません
+        </>,
+      );
+      return;
+    }
+
     const { result, traces } = icemake(
       colors,
       stageId,
