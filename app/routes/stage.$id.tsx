@@ -1047,7 +1047,12 @@ function StageInner({
             全員
             <rt>ぜんいん</rt>
           </ruby>
-          を使わないと
+          を
+          <ruby>
+            使
+            <rt>つか</rt>
+          </ruby> 
+          わないと
           <ruby>
             実行
             <rt>じっこう</rt>
