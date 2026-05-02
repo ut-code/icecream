@@ -112,13 +112,15 @@ export const STAGES: Record<number, StageData> = {
     ]
 },  15: {
     mission: {
-      red: ["chocolate", "strawberry", "chocolate", "vanilla"]
+      red: ["chocolate", "strawberry", "chocolate", "vanilla"],
+      yellow: ["chocolate", "strawberry", "chocolate", "strawberry", "chocolate", "strawberry", "vanilla"]
     },
     components: [
       {type: "push", flavor: "vanilla"},
       {type: "push", flavor: "chocolate"},
       {type: "push", flavor: "strawberry"},
       {type: "if", condition: 6},
+      {type: "if", condition: "red"},
       {type: "if", condition: ["strawberry", "chocolate", "strawberry"]},
       {type: "pop", flavor: undefined}
     ]
