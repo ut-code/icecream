@@ -154,11 +154,10 @@ function StraightNode({ data }: NodeProps<AppNode>) {
     <div className="group flex flex-col items-center relative">
       <button
         type="button"
-        className={`pixel-btn pixel-btn-small absolute -top-0 -right-10 z-10 ${
-          data.onDelete
+        className={`pixel-btn pixel-btn-small absolute -top-0 -right-10 z-10 ${data.onDelete
             ? "opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto"
             : "opacity-0 pointer-events-none"
-        }`}
+          }`}
         style={{ fontSize: "0.75rem", padding: "0.25rem 0.5rem", lineHeight: 1 }}
         onClick={() => data.onDelete?.()}
         aria-label="ノードを削除"
@@ -209,11 +208,10 @@ function SplitNode({ data }: NodeProps<AppNode>) {
     <div className="group flex flex-col items-center relative">
       <button
         type="button"
-        className={`pixel-btn pixel-btn-small absolute -top-0 -right-15 z-10 ${
-          data.onDelete
+        className={`pixel-btn pixel-btn-small absolute -top-0 -right-15 z-10 ${data.onDelete
             ? "opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto"
             : "opacity-0 pointer-events-none"
-        }`}
+          }`}
         style={{ fontSize: "0.75rem", padding: "0.25rem 0.5rem", lineHeight: 1 }}
         onClick={() => data.onDelete?.()}
         aria-label="ノードを削除"
@@ -408,7 +406,15 @@ type AnimState = {
   nextId: number;
   result: Partial<Record<ConeColor, Flavor[]>>;
   transitCones: TransitCone[];
+  virtualTime: number;
+  lastRealTime: number | null;
 };
+
+const SPEED_OPTIONS = [
+  { multiplier: 1, label: "ゆっくり" },
+  { multiplier: 3, label: "はやく" },
+  { multiplier: 8, label: "もっとはやく" },
+];
 
 const SPEED_PPS = 100;
 const SPAWN_INTERVAL_MS = 2000;
@@ -644,6 +650,8 @@ function StageInner({
   const [takenBranchMap, setTakenBranchMap] = useState<
     Map<number, boolean | undefined>
   >(new Map());
+  const [speedMultiplier, setSpeedMultiplier] = useState(1);
+  const speedRef = useRef(1);
   const animRef = useRef<AnimState | null>(null);
   const rafRef = useRef<number | null>(null);
   const outerContainerRef = useRef<HTMLDivElement>(null);
@@ -1063,6 +1071,17 @@ function StageInner({
     );
   }, [takenBranchMap, setNodes, stageId]);
 
+  const resetAnimation = () => {
+    if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+    rafRef.current = null;
+    animRef.current = null;
+    setIsAnimating(false);
+    setFlyingCones([]);
+    setTransitConeRenders([]);
+    setTakenBranchMap(new Map());
+    setPaletteEntries([]);
+  };
+
   const handleExecute = () => {
     if (isAnimating) return;
 
@@ -1211,6 +1230,8 @@ function StageInner({
       nextId: 0,
       result,
       transitCones: [],
+      virtualTime: 0,
+      lastRealTime: null,
     };
 
     const loop = (timestamp: number) => {
@@ -1221,10 +1242,18 @@ function StageInner({
         return;
       }
 
+      if (anim.lastRealTime === null) {
+        anim.lastRealTime = timestamp;
+      }
+      const delta = timestamp - anim.lastRealTime;
+      anim.lastRealTime = timestamp;
+      anim.virtualTime += delta * speedRef.current;
+      const vt = anim.virtualTime;
+
       // Spawn cones at intervals
       if (
         anim.spawnQueue.length > 0 &&
-        (anim.cones.length === 0 || timestamp >= anim.nextSpawnTime)
+        (anim.cones.length === 0 || vt >= anim.nextSpawnTime)
       ) {
         const next = anim.spawnQueue.shift()!;
         anim.cones.push({
@@ -1232,9 +1261,9 @@ function StageInner({
           color: next.color,
           segments: next.segments,
           currentSegment: 0,
-          segmentStartTime: timestamp,
+          segmentStartTime: vt,
         });
-        anim.nextSpawnTime = timestamp + SPAWN_INTERVAL_MS;
+        anim.nextSpawnTime = vt + SPAWN_INTERVAL_MS;
       }
 
       // Compute positions
@@ -1245,7 +1274,7 @@ function StageInner({
         if (cone.currentSegment >= cone.segments.length) continue;
 
         const seg = cone.segments[cone.currentSegment];
-        const elapsed = timestamp - cone.segmentStartTime;
+        const elapsed = vt - cone.segmentStartTime;
         const progress = Math.min(elapsed / seg.durationMs, 1);
 
         // Update image only when state changes during node pause
@@ -1280,7 +1309,7 @@ function StageInner({
 
         if (progress >= 1) {
           cone.currentSegment++;
-          cone.segmentStartTime = timestamp;
+          cone.segmentStartTime = vt;
         }
       }
 
@@ -1316,7 +1345,7 @@ function StageInner({
             startY,
             targetX,
             targetY,
-            startTime: timestamp,
+            startTime: vt,
             durationMs: TRANSIT_DURATION_MS,
           });
         }
@@ -1332,7 +1361,7 @@ function StageInner({
       const arrivedTransit: TransitCone[] = [];
 
       for (const tc of anim.transitCones) {
-        const elapsed = timestamp - tc.startTime;
+        const elapsed = vt - tc.startTime;
         const progress = Math.min(elapsed / tc.durationMs, 1);
         const eased = 1 - Math.pow(1 - progress, 3);
 
@@ -1374,11 +1403,7 @@ function StageInner({
         anim.spawnQueue.length === 0 &&
         anim.transitCones.length === 0
       ) {
-        animRef.current = null;
-        setIsAnimating(false);
-        setFlyingCones([]);
-        setTransitConeRenders([]);
-        setTakenBranchMap(new Map());
+        resetAnimation();
         if (checkClear(stageData.mission, anim.result)) {
           setIsClear(true);
         } else {
@@ -1548,15 +1573,14 @@ function StageInner({
                 ref={(el) => {
                   if (el) paletteSlotRefs.current.set(color, el);
                 }}
-                className={`border-2 rounded-lg p-2 flex flex-col items-center min-h-32 justify-center ${
-                  allArrivedToPalette
+                className={`border-2 rounded-lg p-2 flex flex-col items-center min-h-32 justify-center ${allArrivedToPalette
                     ? isMatch
                       ? "border-green-500 bg-green-50"
                       : "border-red-500 bg-red-50"
                     : entry
                       ? "border-gray-300"
                       : "border-dashed border-gray-300"
-                }`}
+                  }`}
               >
                 {entry ? (
                   <ConeStack color={entry.color} stack={entry.stack} />
@@ -1668,7 +1692,42 @@ function StageInner({
       </div>
 
       {/* Execute button */}
-      <div className="absolute bottom-6 right-6 z-40">
+      <div className="absolute bottom-6 right-6 z-40 flex items-center gap-2">
+        {isAnimating && (
+          <button
+            type="button"
+            className="pixel-btn pixel-btn-small pixel-btn-danger"
+            onClick={() => {
+              resetAnimation();
+              setFailMessage(
+                <>
+                  <ruby>
+                    実行<rt>じっこう</rt>
+                  </ruby>
+                  を
+                  <ruby>
+                    停止<rt>ていし</rt>
+                  </ruby>
+                  しました
+                </>,
+              );
+            }}
+          >
+            ■
+          </button>
+        )}
+        <button
+          type="button"
+          className="pixel-btn pixel-btn-small pixel-btn-secondary"
+          onClick={() => {
+            const idx = SPEED_OPTIONS.findIndex((o) => o.multiplier === speedMultiplier);
+            const next = SPEED_OPTIONS[(idx + 1) % SPEED_OPTIONS.length];
+            setSpeedMultiplier(next.multiplier);
+            speedRef.current = next.multiplier;
+          }}
+        >
+          {SPEED_OPTIONS.find((o) => o.multiplier === speedMultiplier)?.label ?? SPEED_OPTIONS[0].label}
+        </button>
         <button
           type="button"
           className="pixel-btn"
