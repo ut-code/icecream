@@ -17,6 +17,8 @@ export type IcemakeResult = {
   traces: { color: ConeColor; steps: ExecutionStep[] }[];
 };
 
+const MAX_ICE_STACK_SIZE = 10;
+
 export function icemake(
   colors: ConeColor[],
   stage: number,
@@ -80,7 +82,7 @@ function runGraphExecution(
 
     switch (component.type) {
       case "push":
-        if (stack.length < 10) stack.push(component.flavor);
+        if (stack.length < MAX_ICE_STACK_SIZE) stack.push(component.flavor);
         break;
       case "pop":
         if (

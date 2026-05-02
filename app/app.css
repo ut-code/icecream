@@ -147,3 +147,19 @@ img {
   image-rendering: pixelated;
   -webkit-user-drag: none;
 }
+
+/* Keep dragged nodes visible even when crossing the bottom tray area. */
+.stage-flow {
+  overflow: visible !important;
+}
+
+.stage-flow .react-flow__viewport,
+.stage-flow .react-flow__renderer,
+.stage-flow .react-flow__container,
+.stage-flow .react-flow__nodes {
+  overflow: visible !important;
+}
+
+.stage-flow .react-flow__node.dragging {
+  z-index: 3000 !important;
+}
