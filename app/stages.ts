@@ -93,7 +93,7 @@ export const STAGES: Record<number, StageData> = {
       {type: "push", flavor: "chocolate"},
       {type: "if", condition: "red"},
       {type: "if", condition: ["vanilla", "vanilla"]},
-      {type: "pop", flavor: "chocolate"}
+      {type: "pop", flavor: undefined}
     ]
   },
   13: {
