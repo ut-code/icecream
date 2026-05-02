@@ -141,8 +141,6 @@ export const STAGES: Record<number, StageData> = {
       {type: "if", condition: 5},
     ]
 },
-
-}
   21: {
     mission: {
       red: ["chocolate", "vanilla", "strawberry", "chocolate", "vanilla", "strawberry"],
