@@ -399,6 +399,9 @@ type DragOverlayNode = {
   data: AppNode["data"];
   x: number;
   y: number;
+  offsetX: number;
+  offsetY: number;
+  zoom: number;
 };
 
 type AnimState = {
@@ -791,56 +794,70 @@ function StageInner({
   }, []);
 
   const onNodeDragStart: OnNodeDrag<AppNode> = useCallback(
-    (_event, node) => {
+    (event, node) => {
       if (node.id === "start") return;
       if (!outerContainerRef.current || !reactFlowWrapper.current) return;
 
       const outerRect = outerContainerRef.current.getBoundingClientRect();
-      const wrapperRect = reactFlowWrapper.current.getBoundingClientRect();
       const viewport = getViewport();
+
+      // ReactFlow内の実ノード要素を取得してスクリーン座標を計算
+      const nodeElement = reactFlowWrapper.current.querySelector(
+        `[data-id="${node.id}"]`
+      );
+      if (!nodeElement) return;
+
+      const nodeRect = nodeElement.getBoundingClientRect();
+      const nodeScreenX = nodeRect.left - outerRect.left + nodeRect.width / 2;
+      const nodeScreenY = nodeRect.top - outerRect.top + nodeRect.height / 2;
+
+      // マウス座標をouterContainer相対に変換
+      const mouseScreenX = event.clientX - outerRect.left;
+      const mouseScreenY = event.clientY - outerRect.top;
+
+      // オフセット（マウスがノードの中心からどれだけずれているか）
+      const offsetX = mouseScreenX - nodeScreenX;
+      const offsetY = mouseScreenY - nodeScreenY;
 
       setDragOverlayNode({
         id: node.id,
         type: node.type,
         data: node.data,
-        x:
-          wrapperRect.left -
-          outerRect.left +
-          node.position.x * viewport.zoom +
-          viewport.x,
-        y:
-          wrapperRect.top -
-          outerRect.top +
-          node.position.y * viewport.zoom +
-          viewport.y,
+        x: nodeScreenX,
+        y: nodeScreenY,
+        offsetX,
+        offsetY,
+        zoom: viewport.zoom,
       });
     },
     [getViewport],
   );
 
   const onNodeDrag: OnNodeDrag<AppNode> = useCallback(
-    (_event, node) => {
+    (event, node) => {
       if (node.id === "start") return;
-      if (!outerContainerRef.current || !reactFlowWrapper.current) return;
+      if (!outerContainerRef.current) return;
 
-      const outerRect = outerContainerRef.current.getBoundingClientRect();
-      const wrapperRect = reactFlowWrapper.current.getBoundingClientRect();
-      const viewport = getViewport();
+      setDragOverlayNode((prev) => {
+        if (!prev) return null;
 
-      setDragOverlayNode({
-        id: node.id,
-        type: node.type,
-        data: node.data,
-        x:
-          wrapperRect.left -
-          outerRect.left +
-          node.position.x * viewport.zoom +
-          viewport.x,
-        y:
-          wrapperRect.top -
-          outerRect.top +
-          node.position.y * viewport.zoom +
-          viewport.y,
+        const outerRect = outerContainerRef.current!.getBoundingClientRect();
+        const viewport = getViewport();
+
+        // マウス座標をouterContainer相対に変換
+        const mouseScreenX = event.clientX - outerRect.left;
+        const mouseScreenY = event.clientY - outerRect.top;
+
+        // オフセットを差し引いてノードの位置を計算
+        const nodeScreenX = mouseScreenX - prev.offsetX;
+        const nodeScreenY = mouseScreenY - prev.offsetY;
+
+        return {
+          ...prev,
+          x: nodeScreenX,
+          y: nodeScreenY,
+          zoom: viewport.zoom,
+        };
       });
     },
     [getViewport],
@@ -1579,14 +1596,23 @@ function StageInner({
           style={{
             left: dragOverlayNode.x,
             top: dragOverlayNode.y,
-            transform: "translate(0, 0)",
+            transform: `translate(-50%, -50%) scale(${dragOverlayNode.zoom})`,
+            transformOrigin: "center center",
           }}
         >
-          {dragOverlayNode.type === "split" ? (
-            <SplitNodeVisual data={dragOverlayNode.data} />
-          ) : (
-            <StraightNodeVisual data={dragOverlayNode.data} />
-          )}
+          <div className="flex flex-col items-center relative">
+            <div
+              style={{
+                width: "2.5rem",
+                height: dragOverlayNode.type === "split" ? "2.2rem" : "0",
+              }}
+            />
+            {dragOverlayNode.type === "split" ? (
+              <SplitNodeVisual data={dragOverlayNode.data} />
+            ) : (
+              <StraightNodeVisual data={dragOverlayNode.data} />
+            )}
+          </div>
         </div>
       )}
 
