@@ -7,7 +7,7 @@ export function meta() {
     { name: "description", content: "ゲームの遊び方ページ（準備中）" },
   ];
 }
-
+// prettier-ignore
 export default function HowToPlay() {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(0);
@@ -137,9 +137,9 @@ export default function HowToPlay() {
             <li>・ アイスを<ruby>食<rt>た</rt></ruby>べてしまう<ruby>人<rt>ひと</rt></ruby></li>
           </ul>
           <div className="text-center mt-4">
-            <img src="/push_vanilla.png" alt="バニラアイスをのせる人" className="inline-block w-16 h-16 mx-2" />
-            <img src="/if_true.png" alt="コーンを分けて流す人" className="inline-block w-16 h-16 mx-2" />
-            <img src="/pop_chocolate.png" alt="アイスを食べてしまう人" className="inline-block w-16 h-16 mx-2" />
+            <img src="/push_vanilla.png" alt="バニラアイスをのせる人" className="inline-block h-16 mx-2" />
+            <img src="/if_true.png" alt="コーンを分けて流す人" className="inline-block h-16 mx-2" />
+            <img src="/pop_chocolate.png" alt="アイスを食べてしまう人" className="inline-block h-16 mx-2" />
           </div>
         </section>
       ),
@@ -168,9 +168,9 @@ export default function HowToPlay() {
             </div>
           </div>
           <div className="text-center mt-4">
-            <img src="/push_vanilla.png" alt="バニラアイスをのせる人" className="inline-block w-16 h-16 mx-2" />
-            <img src="/push_chocolate.png" alt="チョコアイスをのせる人" className="inline-block w-16 h-16 mx-2" />
-            <img src="/push_strawberry.png" alt="イチゴアイスをのせる人" className="inline-block w-16 h-16 mx-2" />
+            <img src="/push_vanilla.png" alt="バニラアイスをのせる人" className="inline-block h-16 mx-2" />
+            <img src="/push_chocolate.png" alt="チョコアイスをのせる人" className="inline-block h-16 mx-2" />
+            <img src="/push_strawberry.png" alt="イチゴアイスをのせる人" className="inline-block h-16 mx-2" />
           </div>
         </section>
       ),
@@ -201,8 +201,8 @@ export default function HowToPlay() {
             </div>
           </div>
           <div className="text-center mt-4">
-            <img src="/if_true.png" alt="コーンを分けて流す人(TRUE)" className="inline-block w-16 h-16 mx-2" />
-            <img src="/if_false.png" alt="コーンを分けて流す人(FALSE)" className="inline-block w-16 h-16 mx-2" />
+            <img src="/if_true.png" alt="コーンを分けて流す人(TRUE)" className="inline-block h-16 mx-2" />
+            <img src="/if_false.png" alt="コーンを分けて流す人(FALSE)" className="inline-block h-16 mx-2" />
           </div>
         </section>
       ),
@@ -227,12 +227,16 @@ export default function HowToPlay() {
               <p>
                 といった<ruby>場<rt>ば</rt></ruby><ruby>合<rt>あい</rt></ruby>は、<ruby>何<rt>なに</rt></ruby>もしません。
               </p>
+              <p className="mb-2 font-semibold">
+                ※<ruby>黒<rt>くろ</rt></ruby>い<ruby>服<rt>ふく</rt></ruby>の人は、どんな<ruby>味<rt>あじ</rt></ruby>も<ruby>大<rt>だい</rt></ruby><ruby>好<rt>す</rt></ruby>きです！
+              </p>
             </div>
           </div>
           <div className="text-center mt-4">
-            <img src="/pop_vanilla.png" alt="バニラアイスを食べる人" className="inline-block w-16 h-16 mx-2" />
-            <img src="/pop_chocolate.png" alt="チョコアイスを食べる人" className="inline-block w-16 h-16 mx-2" />
-            <img src="/pop_strawberry.png" alt="イチゴアイスを食べる人" className="inline-block w-16 h-16 mx-2" />
+            <img src="/pop_vanilla.png" alt="バニラアイスを食べる人" className="inline-block h-16 mx-2" />
+            <img src="/pop_chocolate.png" alt="チョコアイスを食べる人" className="inline-block h-16 mx-2" />
+            <img src="/pop_strawberry.png" alt="イチゴアイスを食べる人" className="inline-block h-16 mx-2" />
+            <img src="/pop.png" alt="何でも食べる人" className="inline-block h-16 mx-2" />
           </div>
         </section>
       ),
@@ -254,12 +258,12 @@ export default function HowToPlay() {
             </p>
           </div>
           <div className="text-center mt-4">
-            <img src="/cone_yellow.png" alt="コーン(黄)" className="inline-block w-16 h-16 mx-2" />
-            <img src="/ice_vanilla.png" alt="バニラアイス" className="inline-block w-16 h-16 mx-2" />
-            <img src="/cone_brown.png" alt="コーン(茶)" className="inline-block w-16 h-16 mx-2" />
-            <img src="/ice_chocolate.png" alt="チョコアイス" className="inline-block w-16 h-16 mx-2" />
-            <img src="/cone_red.png" alt="コーン(赤)" className="inline-block w-16 h-16 mx-2" />
-            <img src="/ice_strawberry.png" alt="イチゴアイス" className="inline-block w-16 h-16 mx-2" />
+            <img src="/cone_yellow.png" alt="コーン(黄)" className="inline-block h-16 mx-2" />
+            <img src="/ice_vanilla.png" alt="バニラアイス" className="inline-block h-16 mx-2" />
+            <img src="/cone_brown.png" alt="コーン(茶)" className="inline-block h-16 mx-2" />
+            <img src="/ice_chocolate.png" alt="チョコアイス" className="inline-block h-16 mx-2" />
+            <img src="/cone_red.png" alt="コーン(赤)" className="inline-block h-16 mx-2" />
+            <img src="/ice_strawberry.png" alt="イチゴアイス" className="inline-block h-16 mx-2" />
           </div>
           
         </section>

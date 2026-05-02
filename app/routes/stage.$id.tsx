@@ -31,6 +31,22 @@ import {
 
 let id = 0;
 const getId = () => `node_${id++}`;
+const DEFAULT_VIEWPORT = { x: 20, y: 200, zoom: 1 };
+
+const createInitialNodes = (): AppNode[] => [
+  {
+    id: "start",
+    type: "start",
+    position: { x: 0, y: 150 },
+    data: {
+      label: "始点",
+      component: { type: "push", flavor: "vanilla" } as Component,
+      componentIndex: -1,
+    },
+    draggable: false,
+    deletable: false,
+  },
+];
 
 type AppNode = Node<{
   label: string | React.ReactNode;
@@ -57,6 +73,7 @@ function getComponentSrc(
   if (component.type === "push") {
     return { src: `/push_${component.flavor}.png` };
   } else if (component.type === "pop") {
+    if (!component.flavor) return { src: "/pop.png" };
     return { src: `/pop_${component.flavor}.png` };
   } else if (component.type === "if") {
     const condition = component.condition;
@@ -615,22 +632,11 @@ function StageInner({
   const [remainedComponentIdxs, setRemainedComponentIdxs] = useState<number[]>([
     ...Array(stageData.components.length).keys(),
   ]);
-  const [nodes, setNodes, onNodesChange] = useNodesState<AppNode>([
-    {
-      id: "start",
-      type: "start",
-      position: { x: 0, y: 150 },
-      data: {
-        label: "始点",
-        component: { type: "push", flavor: "vanilla" } as Component,
-        componentIndex: -1,
-      },
-      draggable: false,
-      deletable: false,
-    },
-  ]);
+  const [nodes, setNodes, onNodesChange] = useNodesState<AppNode>(
+    createInitialNodes(),
+  );
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
-  const { screenToFlowPosition, getViewport } = useReactFlow();
+  const { screenToFlowPosition, getViewport, setViewport } = useReactFlow();
   const [isClear, setIsClear] = useState(false);
   const [failMessage, setFailMessage] = useState<React.ReactNode>("");
   const [isAnimating, setIsAnimating] = useState(false);
@@ -999,6 +1005,27 @@ function StageInner({
     };
   }, []);
 
+  useEffect(() => {
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+    animRef.current = null;
+
+    setRemainedComponentIdxs([...Array(stageData.components.length).keys()]);
+    setNodes(createInitialNodes());
+    setEdges([]);
+    setIsClear(false);
+    setFailMessage("");
+    setIsAnimating(false);
+    setFlyingCones([]);
+    setTakenBranchMap(new Map());
+    setTransitConeRenders([]);
+    setPaletteEntries([]);
+    paletteSlotRefs.current.clear();
+    setViewport(DEFAULT_VIEWPORT);
+  }, [stageId, stageData.components.length, setNodes, setEdges, setViewport]);
+
   // Update node images based on activeComponents
   useEffect(() => {
     setNodes((nds) =>
@@ -1034,7 +1061,7 @@ function StageInner({
         return node;
       }),
     );
-  }, [takenBranchMap, setNodes]);
+  }, [takenBranchMap, setNodes, stageId]);
 
   const handleExecute = () => {
     if (isAnimating) return;
@@ -1488,7 +1515,7 @@ function StageInner({
             },
           }}
           connectionLineType={ConnectionLineType.Straight}
-          defaultViewport={{ x: 20, y: 100, zoom: 1 }}
+          defaultViewport={DEFAULT_VIEWPORT}
         >
         </ReactFlow>
 

@@ -85,7 +85,10 @@ function runGraphExecution(
         if (stack.length < MAX_ICE_STACK_SIZE) stack.push(component.flavor);
         break;
       case "pop":
-        if (stack.length > 0 && stack[stack.length - 1] === component.flavor)
+        if (
+          stack.length > 0 &&
+          (!component.flavor || stack[stack.length - 1] === component.flavor)
+        )
           stack.pop();
         break;
       case "if":
@@ -98,14 +101,18 @@ function runGraphExecution(
     if (children != null && typeof children !== "number") {
       let condition = false;
       if (component.type === "if") {
-        const cond: ConeColor | Flavor | Flavor[] | number = component.condition;
+        const cond: ConeColor | Flavor | Flavor[] | number =
+          component.condition;
         if (typeof cond === "string") {
-          if (coneColors.includes(cond as ConeColor)) condition = color === cond;
+          if (coneColors.includes(cond as ConeColor))
+            condition = color === cond;
           else if (flavors.includes(cond as Flavor))
             condition = stack.length > 0 && stack[stack.length - 1] === cond;
         } else if (Array.isArray(cond)) {
           for (let i = 0; i <= stack.length - cond.length; i++) {
-            if (stack.slice(i, i + cond.length).every((f, j) => f === cond[j])) {
+            if (
+              stack.slice(i, i + cond.length).every((f, j) => f === cond[j])
+            ) {
               condition = true;
               break;
             }
