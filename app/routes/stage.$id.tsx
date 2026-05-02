@@ -1044,6 +1044,17 @@ function StageInner({
     );
   }, [takenBranchMap, setNodes]);
 
+  const resetAnimation = () => {
+    if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+    rafRef.current = null;
+    animRef.current = null;
+    setIsAnimating(false);
+    setFlyingCones([]);
+    setTransitConeRenders([]);
+    setTakenBranchMap(new Map());
+    setPaletteEntries([]);
+  };
+
   const handleExecute = () => {
     if (isAnimating) return;
 
@@ -1296,11 +1307,7 @@ function StageInner({
         anim.spawnQueue.length === 0 &&
         anim.transitCones.length === 0
       ) {
-        animRef.current = null;
-        setIsAnimating(false);
-        setFlyingCones([]);
-        setTransitConeRenders([]);
-        setTakenBranchMap(new Map());
+        resetAnimation();
         if (checkClear(stageData.mission, anim.result)) {
           setIsClear(true);
         } else {
@@ -1590,6 +1597,29 @@ function StageInner({
 
       {/* Execute button */}
       <div className="absolute bottom-6 right-6 z-40 flex items-center gap-2">
+        {isAnimating && (
+          <button
+            type="button"
+            className="pixel-btn pixel-btn-small pixel-btn-danger"
+            onClick={() => {
+              resetAnimation();
+              setFailMessage(
+                <>
+                  <ruby>
+                    実行<rt>じっこう</rt>
+                  </ruby>
+                  を
+                  <ruby>
+                    停止<rt>ていし</rt>
+                  </ruby>
+                  しました
+                </>,
+              );
+            }}
+          >
+            ■
+          </button>
+        )}
         <button
           type="button"
           className="pixel-btn pixel-btn-small pixel-btn-secondary"

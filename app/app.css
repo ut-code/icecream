@@ -75,6 +75,10 @@ body {
   background: #b8e6b8;
 }
 
+.pixel-btn-danger {
+  background: #f87171;
+}
+
 .pixel-btn-small {
   font-size: 0.875rem;
   padding: 0.375rem 1rem;
