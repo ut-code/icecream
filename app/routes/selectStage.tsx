@@ -103,15 +103,15 @@ const personDecorations = [
   {
     src: "/if_false.png",
     alt: "If False Character",
-    top: "50rem",
-    right: "4rem",
+    top: "45rem",
+    right: "5rem",
     width: 76,
   },
   {
     src: "/if_true.png",
     alt: "If True Character",
-    top: "47%",
-    left: "18rem",
+    top: "55rem",
+    left: "16rem",
     width: 76,
   },
   {
@@ -131,8 +131,8 @@ const personDecorations = [
   {
     src: "/pop_chocolate.png",
     alt: "Pop Chocolate Character",
-    bottom: "27rem",
-    left: "35%",
+    bottom: "26rem",
+    left: "26rem",
     width: 64,
   },
   {
@@ -145,8 +145,8 @@ const personDecorations = [
   {
     src: "/push_strawberry.png",
     alt: "Push Strawberry Character",
-    bottom: "45rem",
-    left: "45%",
+    bottom: "43rem",
+    left: "37rem",
     width: 72,
   },
   {
