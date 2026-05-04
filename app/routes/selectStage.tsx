@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router";
 import { bubbles } from "~/bubbles";
 
-const TOTAL_STAGES = 24;
+const TOTAL_STAGES = 20;
 
 const PATH_WIDTH = 1100;
 const CENTER_X = PATH_WIDTH / 2;
@@ -103,15 +103,15 @@ const personDecorations = [
   {
     src: "/if_false.png",
     alt: "If False Character",
-    stageIndex: 10,
+    stageIndex: 8,
     width: 76,
-    offsetX: 80,
-    offsetY: -150,
+    offsetX: 50,
+    offsetY: -100,
   },
   {
     src: "/if_true.png",
     alt: "If True Character",
-    stageIndex: 23,
+    stageIndex: 19,
     width: 76,
     offsetX: 40,
     offsetY: -150,
@@ -119,15 +119,15 @@ const personDecorations = [
   {
     src: "/pop_vanilla.png",
     alt: "Pop Vanilla Character",
-    stageIndex: 7,
+    stageIndex: 0,
     width: 64,
     offsetX: 40,
-    offsetY: -120,
+    offsetY: -80,
   },
   {
     src: "/pop_strawberry.png",
     alt: "Pop Strawberry Character",
-    stageIndex: 2,
+    stageIndex: 16,
     width: 64,
     offsetX: 40,
     offsetY: -120,
@@ -135,7 +135,7 @@ const personDecorations = [
   {
     src: "/pop_chocolate.png",
     alt: "Pop Chocolate Character",
-    stageIndex: 14,
+    stageIndex: 10,
     width: 64,
     offsetX: 40,
     offsetY: -120,
@@ -143,7 +143,7 @@ const personDecorations = [
   {
     src: "/push_vanilla.png",
     alt: "Push Vanilla Character",
-    stageIndex: 4,
+    stageIndex: 13,
     width: 72,
     offsetX: 40,
     offsetY: -120,
@@ -151,15 +151,15 @@ const personDecorations = [
   {
     src: "/push_strawberry.png",
     alt: "Push Strawberry Character",
-    stageIndex: 18,
+    stageIndex: 3,
     width: 72,
-    offsetX: 40,
-    offsetY: -120,
+    offsetX: 20,
+    offsetY: -150,
   },
   {
     src: "/push_chocolate.png",
     alt: "Push Chocolate Character",
-    stageIndex: 21,
+    stageIndex: 6,
     width: 64,
     offsetX: 40,
     offsetY: -120,
