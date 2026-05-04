@@ -93,13 +93,6 @@ function getComponentSrc(
     ) {
       return { src: baseSrc, overlaySrc: `/cone_${condition}.png` };
     }
-    // Flavor
-    if (
-      typeof condition === "string" &&
-      ["vanilla", "chocolate", "strawberry"].includes(condition)
-    ) {
-      return { src: baseSrc, overlaySrc: `/ice_${condition}.png` };
-    }
     // Flavor[]
     if (Array.isArray(condition)) {
       const overlayImages = condition.map((flavor) => `/ice_${flavor}.png`);

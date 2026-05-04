@@ -101,13 +101,10 @@ function runGraphExecution(
     if (children != null && typeof children !== "number") {
       let condition = false;
       if (component.type === "if") {
-        const cond: ConeColor | Flavor | Flavor[] | number =
+        const cond: ConeColor | Flavor[] | number =
           component.condition;
         if (typeof cond === "string") {
-          if (coneColors.includes(cond as ConeColor))
-            condition = color === cond;
-          else if (flavors.includes(cond as Flavor))
-            condition = stack.length > 0 && stack[stack.length - 1] === cond;
+          condition = color === cond;
         } else if (Array.isArray(cond)) {
           for (let i = 0; i <= stack.length - cond.length; i++) {
             if (

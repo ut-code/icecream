@@ -3,7 +3,7 @@ export type Flavor = "vanilla" | "chocolate" | "strawberry";
 export type Component =
   | { type: "start" }
   | { type: "push"; flavor: Flavor }
-  | { type: "if"; condition: ConeColor | Flavor | Flavor[] | number }
+  | { type: "if"; condition: ConeColor | Flavor[] | number }
   | { type: "pop"; flavor: Flavor | undefined };
 export type StageData = {
   mission: Partial<Record<ConeColor, Flavor[]>>;
