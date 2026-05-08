@@ -1,0 +1,12 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "icecream",
+  "compatibility_date": "2026-05-08",
+  "observability": {
+    "enabled": true
+  },
+  "main": "./workers/app.ts",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ]
+}
