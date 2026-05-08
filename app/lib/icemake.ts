@@ -72,9 +72,6 @@ function runGraphExecution(
   const visited: Map<number, Set<string>> = new Map();
   let currentId: number | null = firstComponentId;
 
-  const coneColors: ConeColor[] = ["red", "yellow", "brown"];
-  const flavors: Flavor[] = ["vanilla", "chocolate", "strawberry"];
-
   while (currentId !== null) {
     const component: Component | undefined = components[currentId];
     const node: ComponentGraphNode | undefined = graph[currentId];
@@ -136,7 +133,11 @@ function runGraphExecution(
         branchTaken = condition;
       }
 
-      steps.push({ componentIndex: currentId, stack: [...stack], branchTaken });
+      steps.push({
+        componentIndex: currentId,
+        stack: stack === null ? null : [...stack],
+        branchTaken,
+      });
 
       if (children == null) break;
 

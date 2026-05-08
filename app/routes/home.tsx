@@ -49,11 +49,11 @@ function renderIceCream(spec: IceCreamSpec, index: number) {
 }
 
 const iceCreams : IceCreamSpec[] = [
-  { x: "24px", y: "calc(100% - 100px)", cone: "red", scoops: ["vanilla", "chocolate", "chocolate","strawberry", "strawberry"] },
+  { x: "10%", y: "calc(100% - 100px)", cone: "red", scoops: ["vanilla", "chocolate", "chocolate","strawberry", "strawberry"] },
   { x: "25%", y: "calc(100% - 100px)", cone: "brown", scoops: ["strawberry", "vanilla", "chocolate"] },
   { x: "50%", y: "calc(100% - 100px)", cone: "yellow", scoops: ["chocolate"] },
   { x: "75%", y: "calc(100% - 100px)", cone: "red", scoops: ["chocolate", "strawberry", "vanilla"] },
-  { x: "calc(100% - 100px)", y: "calc(100% - 100px)", cone: "brown", scoops: ["strawberry", "strawberry", "chocolate", "vanilla", "strawberry"] },
+  { x: "90%", y: "calc(100% - 100px)", cone: "brown", scoops: ["strawberry", "strawberry", "chocolate", "vanilla", "strawberry"] },
 ];
 
 export function meta({}: Route.MetaArgs) {
