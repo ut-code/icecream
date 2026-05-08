@@ -63,7 +63,7 @@ export default function HowToPlay() {
             この<ruby>画<rt>が</rt></ruby><ruby>面<rt>めん</rt></ruby>には、プレイに<ruby>必<rt>ひつ</rt></ruby><ruby>要<rt>よう</rt></ruby>なさまざまな<ruby>情<rt>じょう</rt></ruby><ruby>報<rt>ほう</rt></ruby>が<ruby>表<rt>ひょう</rt></ruby><ruby>示<rt>じ</rt></ruby>されています。
           </p>
           <p className="mb-3 text-gray-700">
-            <ruby>左<rt>ひだり</rt></ruby><ruby>上<rt>うえ</rt></ruby>には、そのステージのミッション（<ruby>作<rt>つく</rt></ruby>りたいアイスクリーム）が<ruby>書<rt>か</rt></ruby>かれています。
+            <ruby>左<rt>ひだり</rt></ruby><ruby>上<rt>うえ</rt></ruby>には、そのステージの番号やミッション（<ruby>作<rt>つく</rt></ruby>りたいアイスクリーム）が<ruby>書<rt>か</rt></ruby>かれています。
             このミッションを<ruby>達<rt>たっ</rt></ruby><ruby>成<rt>せい</rt></ruby>できるよう、<ruby>人々<rt>ひとびと</rt></ruby>を<ruby>上手<rt>じょうず</rt></ruby>に<ruby>配<rt>はい</rt></ruby><ruby>置<rt>ち</rt></ruby>しましょう。
           </p>
           <div className="text-center mt-4">
@@ -80,6 +80,9 @@ export default function HowToPlay() {
           <p className="mb-3 text-gray-700">
             <ruby>画<rt>が</rt></ruby><ruby>面<rt>めん</rt></ruby><ruby>下<rt>した</rt></ruby>には、このステージで<ruby>作<rt>さ</rt></ruby><ruby>業<rt>ぎょう</rt></ruby>してくれる<ruby>人<rt>ひと</rt></ruby>たちが<ruby>並<rt>なら</rt></ruby>んでいます。
             <ruby>作<rt>さ</rt></ruby><ruby>業<rt>ぎょう</rt></ruby>に<ruby>参<rt>さん</rt></ruby><ruby>加<rt>か</rt></ruby>させたい<ruby>人<rt>ひと</rt></ruby>がいたら、ドラッグ＆ドロップで<ruby>好<rt>す</rt></ruby>きな<ruby>場<rt>ば</rt></ruby><ruby>所<rt>しょ</rt></ruby>に<ruby>配<rt>はい</rt></ruby><ruby>置<rt>ち</rt></ruby>できます。
+            <ruby>配<rt>はい</rt></ruby><ruby>置<rt>ち</rt></ruby>した<ruby>人<rt>ひと</rt></ruby><ruby>々<rt>びと</rt></ruby>は、その<ruby>下<rt>した</rt></ruby>にあるベルトコンベアを<ruby>別<rt>べつ</rt></ruby>の<ruby>人<rt>ひと</rt></ruby>やコーン<ruby>投<rt>とう</rt></ruby><ruby>入<rt>にゅう</rt></ruby><ruby>口<rt>ぐち</rt></ruby>と<ruby>繋<rt>つな</rt></ruby>げることで、アイスクリーム<ruby>作<rt>づく</rt></ruby>りを<ruby>手伝<rt>てつだ</rt></ruby>ってくれます。
+            ベルトコンベアの<ruby>端<rt>はし</rt></ruby>をクリックしたまま、<ruby>別<rt>べつ</rt></ruby>のベルトコンベアの<ruby>端<rt>はし</rt></ruby>まで<ruby>持<rt>も</rt></ruby>っていくことでつなげることができます。
+            <ruby>配<rt>はい</rt></ruby><ruby>置<rt>ち</rt></ruby>した<ruby>人<rt>ひと</rt></ruby><ruby>々<rt>びと</rt></ruby>や、つなげた<ruby>経路<rt>けいろ</rt></ruby>はホバーして出てくる×ボタンで<ruby>消<rt>け</rt></ruby>すことができます。
           </p>
           <div className="text-center mt-4">
             <img src="/stage_screen.png" alt="ステージ画面の説明" className="inline-block w-128 h-64 mx-2" />
@@ -95,6 +98,7 @@ export default function HowToPlay() {
           <p className="mb-3 text-gray-700">
             <ruby>右<rt>みぎ</rt></ruby><ruby>下<rt>した</rt></ruby>には「<ruby>実<rt>じっ</rt></ruby><ruby>行<rt>こう</rt></ruby>」ボタンがあります。
             <ruby>配<rt>はい</rt></ruby><ruby>置<rt>ち</rt></ruby>が<ruby>整<rt>ととの</rt></ruby>ったと<ruby>思<rt>おも</rt></ruby>ったら、このボタンを<ruby>押<rt>お</rt></ruby>してみましょう。<ruby>押<rt>お</rt></ruby>すと、さまざまな<ruby>色<rt>いろ</rt></ruby>のコーンが<ruby>流<rt>なが</rt></ruby>れてきます。
+            スピードを<ruby>変<rt>か</rt></ruby>えたいときは、<ruby>実行<rt>じっこう</rt></ruby>ボタンの<ruby>隣<rt>となり</rt></ruby>にあるボタンを<ruby>押<rt>お</rt></ruby>すことにより、<ruby>速<rt>はや</rt></ruby>くしたり<ruby>遅<rt>おそ</rt></ruby>くしたりできます。
           </p>
           <p className="mb-3 text-gray-700">
             お<ruby>題<rt>だい</rt></ruby>どおりのアイスを<ruby>作<rt>つく</rt></ruby>ることができれば<ruby>成<rt>せい</rt></ruby><ruby>功<rt>こう</rt></ruby>です。
@@ -192,8 +196,7 @@ export default function HowToPlay() {
               <ul className="mb-2 space-y-1 ml-4">
                 <li>・ Ⅰ：コーンの<ruby>色<rt>いろ</rt></ruby></li>
                 <li>・ Ⅱ：<ruby>載<rt>の</rt></ruby>っているアイスの<ruby>数<rt>かず</rt></ruby></li>
-                <li>・ Ⅲ：<ruby>一<rt>いち</rt></ruby><ruby>番<rt>ばん</rt></ruby><ruby>上<rt>うえ</rt></ruby>に<ruby>載<rt>の</rt></ruby>っているアイスの<ruby>種<rt>しゅ</rt></ruby><ruby>類<rt>るい</rt></ruby></li>
-                <li>・ Ⅳ：<ruby>特<rt>とく</rt></ruby><ruby>定<rt>てい</rt></ruby>のアイスの<ruby>並<rt>なら</rt></ruby>び<ruby>順<rt>じゅん</rt></ruby>の<ruby>有<rt>う</rt></ruby><ruby>無<rt>む</rt></ruby></li>
+                <li>・ Ⅲ：<ruby>特<rt>とく</rt></ruby><ruby>定<rt>てい</rt></ruby>のアイスの<ruby>並<rt>なら</rt></ruby>び<ruby>順<rt>じゅん</rt></ruby>の<ruby>有<rt>う</rt></ruby><ruby>無<rt>む</rt></ruby></li>
               </ul>
               <p>
                 それぞれの<ruby>条<rt>じょう</rt></ruby><ruby>件<rt>けん</rt></ruby>に<ruby>従<rt>したが</rt></ruby>って、コーンを<ruby>上<rt>じょう</rt></ruby><ruby>下<rt>げ</rt></ruby>どちらかの<ruby>経<rt>けい</rt></ruby><ruby>路<rt>ろ</rt></ruby>へ<ruby>流<rt>なが</rt></ruby>します。
@@ -219,13 +222,9 @@ export default function HowToPlay() {
                 この<ruby>人<rt>ひと</rt></ruby>たちは、<ruby>特<rt>とく</rt></ruby><ruby>定<rt>てい</rt></ruby>の<ruby>味<rt>あじ</rt></ruby>のアイスが<ruby>大<rt>だい</rt></ruby><ruby>好<rt>す</rt></ruby>きです。
                 その<ruby>味<rt>あじ</rt></ruby>のアイスが<ruby>一<rt>いち</rt></ruby><ruby>番<rt>ばん</rt></ruby><ruby>上<rt>うえ</rt></ruby>に<ruby>載<rt>の</rt></ruby>ったコーンが<ruby>流<rt>なが</rt></ruby>れてくると、<ruby>一<rt>いち</rt></ruby><ruby>番<rt>ばん</rt></ruby><ruby>上<rt>うえ</rt></ruby>のアイスを<ruby>食<rt>た</rt></ruby>べてしまいます。
               </p>
-              <p className="mb-2 font-semibold">ただし、</p>
-              <ul className="mb-2 space-y-1 ml-4">
-                <li>・ アイスが1つも<ruby>載<rt>の</rt></ruby>っていない</li>
-                <li>・ <ruby>一<rt>いち</rt></ruby><ruby>番<rt>ばん</rt></ruby><ruby>上<rt>うえ</rt></ruby>のアイスが<ruby>好<rt>す</rt></ruby>きな<ruby>味<rt>あじ</rt></ruby>ではない</li>
-              </ul>
-              <p>
-                といった<ruby>場<rt>ば</rt></ruby><ruby>合<rt>あい</rt></ruby>は、<ruby>何<rt>なに</rt></ruby>もしません。
+              <p className="mb-2 font-semibold">ただし、
+                <ruby>一<rt>いち</rt></ruby><ruby>番<rt>ばん</rt></ruby><ruby>上<rt>うえ</rt></ruby>のアイスが<ruby>好<rt>す</rt></ruby>きな<ruby>味<rt>あじ</rt></ruby>ではない<ruby>場<rt>ば</rt></ruby><ruby>合<rt>あい</rt></ruby>は、<ruby>何<rt>なに</rt></ruby>もしません。
+                しかし、アイスが1つも<ruby>載<rt>の</rt></ruby>っていないコーンが<ruby>流<rt>なが</rt></ruby>れてきたときは、コーンを<ruby>食<rt>た</rt></ruby>べてしまいます。
               </p>
               <p className="mb-2 font-semibold">
                 ※<ruby>黒<rt>くろ</rt></ruby>い<ruby>服<rt>ふく</rt></ruby>の人は、どんな<ruby>味<rt>あじ</rt></ruby>も<ruby>大<rt>だい</rt></ruby><ruby>好<rt>す</rt></ruby>きです！
