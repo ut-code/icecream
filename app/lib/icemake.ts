@@ -116,15 +116,10 @@ function runGraphExecution(
       let branchTaken: boolean | undefined;
       if (children != null && typeof children !== "number") {
         let condition = false;
-        // ifノードの条件を、色 / 先頭フレーバー / 部分配列一致 / 個数で評価する
         if (component.type === "if") {
-          const cond: ConeColor | Flavor | Flavor[] | number =
-            component.condition;
+          const cond: ConeColor | Flavor[] | number = component.condition;
           if (typeof cond === "string") {
-            if (coneColors.includes(cond as ConeColor))
-              condition = color === cond;
-            else if (flavors.includes(cond as Flavor))
-              condition = stack.length > 0 && stack[stack.length - 1] === cond;
+            condition = color === cond;
           } else if (Array.isArray(cond)) {
             for (let i = 0; i <= stack.length - cond.length; i++) {
               if (
@@ -141,11 +136,7 @@ function runGraphExecution(
         branchTaken = condition;
       }
 
-      steps.push({
-        componentIndex: currentId,
-        stack: stack === null ? null : [...stack],
-        branchTaken,
-      });
+      steps.push({ componentIndex: currentId, stack: [...stack], branchTaken });
 
       if (children == null) break;
 

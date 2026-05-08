@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router";
 import { bubbles } from "~/bubbles";
 
-const TOTAL_STAGES = 24;
+const TOTAL_STAGES = 21;
 
 const PATH_WIDTH = 1100;
 const CENTER_X = PATH_WIDTH / 2;
@@ -103,58 +103,66 @@ const personDecorations = [
   {
     src: "/if_false.png",
     alt: "If False Character",
-    top: "50rem",
-    right: "4rem",
+    stageIndex: 8,
     width: 76,
+    offsetX: 50,
+    offsetY: -100,
   },
   {
     src: "/if_true.png",
     alt: "If True Character",
-    top: "47%",
-    left: "18rem",
+    stageIndex: 19,
     width: 76,
+    offsetX: 40,
+    offsetY: -150,
   },
   {
     src: "/pop_vanilla.png",
     alt: "Pop Vanilla Character",
-    top: "37rem",
-    left: "30rem",
+    stageIndex: 0,
     width: 64,
+    offsetX: 40,
+    offsetY: -80,
   },
   {
     src: "/pop_strawberry.png",
     alt: "Pop Strawberry Character",
-    top: "14rem",
-    right: "4rem",
+    stageIndex: 16,
     width: 64,
+    offsetX: 40,
+    offsetY: -120,
   },
   {
     src: "/pop_chocolate.png",
     alt: "Pop Chocolate Character",
-    bottom: "27rem",
-    left: "35%",
+    stageIndex: 10,
     width: 64,
+    offsetX: 40,
+    offsetY: -120,
   },
   {
     src: "/push_vanilla.png",
     alt: "Push Vanilla Character",
-    top: "25rem",
-    left: "22rem",
+    stageIndex: 13,
     width: 72,
+    offsetX: 40,
+    offsetY: -120,
   },
   {
     src: "/push_strawberry.png",
     alt: "Push Strawberry Character",
-    bottom: "45rem",
-    left: "45%",
+    stageIndex: 3,
     width: 72,
+    offsetX: 20,
+    offsetY: -150,
   },
   {
     src: "/push_chocolate.png",
     alt: "Push Chocolate Character",
-    bottom: "37rem",
-    right: "5rem",
+    stageIndex: 6,
     width: 64,
+    offsetX: 40,
+    offsetY: -120,
   },
 ];
 
@@ -180,21 +188,6 @@ export default function SelectStage() {
               "--delay": b.delay,
             } as React.CSSProperties
           }
-        />
-      ))}
-      {personDecorations.map((decor, index) => (
-        <img
-          key={`person-decor-${index}`}
-          src={decor.src}
-          alt={decor.alt}
-          className="pointer-events-none absolute z-0 opacity-90"
-          style={{
-            width: decor.width,
-            top: decor.top,
-            left: decor.left,
-            right: decor.right,
-            bottom: decor.bottom,
-          }}
         />
       ))}
 
@@ -239,6 +232,24 @@ export default function SelectStage() {
             fill="none"
           />
         </svg>
+
+        {personDecorations.map((decor, index) => {
+          const pos = stagePositions[decor.stageIndex];
+          return (
+            <img
+              key={`person-decor-${index}`}
+              src={decor.src}
+              alt={decor.alt}
+              className="pointer-events-none absolute z-0 opacity-90"
+              style={{
+                position: "absolute",
+                width: decor.width,
+                left: pos.x + decor.offsetX,
+                top: pos.y + decor.offsetY,
+              }}
+            />
+          );
+        })}
 
         {stagePositions.map((pos, i) => {
           const stageNum = i + 1;
