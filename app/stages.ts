@@ -165,6 +165,23 @@ export const STAGES: Record<number, StageData> = {
       { type: "if", condition: 3 },
     ],
   },
+  13: {
+    mission: {
+      red: ["chocolate", "vanilla", "chocolate", "vanilla", "chocolate", "vanilla", "chocolate", "vanilla", "strawberry"],
+      yellow: ["vanilla", "vanilla", "vanilla", "vanilla", "vanilla", "vanilla", "vanilla", "strawberry", "strawberry"],
+      brown: ["vanilla", "chocolate", "vanilla", "vanilla", "chocolate", "vanilla", "vanilla", "chocolate", "vanilla",],
+    },
+    components: [
+      { type: "if", condition: "red" },
+      { type: "if", condition: "brown" },
+      { type: "if", condition: 7 },
+      { type: "if", condition: 9 },
+      { type: "push", flavor: "chocolate" },
+      { type: "push", flavor: "strawberry" },
+      { type: "push", flavor: "vanilla" },
+      { type: "push", flavor: "vanilla" },
+    ],
+  },
   14: {
     mission: {
       red: ["vanilla", "chocolate", "vanilla"],
@@ -295,44 +312,7 @@ export const STAGES: Record<number, StageData> = {
       { type: "if", condition: 5 },
     ],
   },
-  24: {
-    mission: {
-      red: ["chocolate", "vanilla", "chocolate", "vanilla", "chocolate", "vanilla", "chocolate", "vanilla", "strawberry"],
-      yellow: ["vanilla", "vanilla", "vanilla", "vanilla", "vanilla", "vanilla", "vanilla", "strawberry", "strawberry"],
-      brown: ["vanilla", "chocolate", "vanilla", "vanilla", "chocolate", "vanilla", "vanilla", "chocolate", "vanilla",],
-    },
-    components: [
-      { type: "if", condition: "red" },
-      { type: "if", condition: "brown" },
-      { type: "if", condition: 7 },
-      { type: "if", condition: 9 },
-      { type: "push", flavor: "chocolate" },
-      { type: "push", flavor: "strawberry" },
-      { type: "push", flavor: "vanilla" },
-      { type: "push", flavor: "vanilla" },
-    ],
-  },
-  
-  20: {
-    mission: {
-      red: ["vanilla", "chocolate", "strawberry", "vanilla", "chocolate", "strawberry", "chocolate", "vanilla"],
-      yellow: ["strawberry", "vanilla", "chocolate", "strawberry", "chocolate", "vanilla", "strawberry", "chocolate", "vanilla"],
-      brown: ["vanilla", "strawberry", "vanilla", "chocolate", "strawberry", "chocolate", "vanilla", "strawberry", "chocolate", "vanilla"],
-    },
-    components: [
-      {type: "push", flavor: "vanilla"},
-      {type: "push", flavor: "chocolate"},
-      {type: "push", flavor: "vanilla"},
-      {type: "push", flavor: "chocolate"},
-      {type: "push", flavor: "strawberry"},
-      {type: "if", condition: "red"},
-      {type: "if", condition: "yellow"},
-      {type: "if", condition: 4},
-      {type: "if", condition: 8},
-    ]
-  },
-  
-21: {
+20: {
     mission: {
       red: ["vanilla", "strawberry", "chocolate", "vanilla", "chocolate", "strawberry", "vanilla", "chocolate", "strawberry"],
       yellow: ["chocolate", "vanilla", "strawberry", "chocolate", "strawberry", "vanilla", "chocolate", "strawberry"],
@@ -347,6 +327,24 @@ export const STAGES: Record<number, StageData> = {
       {type: "if", condition: 3},
       {type: "if", condition: 4},
       {type: "if", condition: 5},
+      {type: "if", condition: 8},
+    ]
+  },
+  21: {
+    mission: {
+      red: ["vanilla", "chocolate", "strawberry", "vanilla", "chocolate", "strawberry", "chocolate", "vanilla"],
+      yellow: ["strawberry", "vanilla", "chocolate", "strawberry", "chocolate", "vanilla", "strawberry", "chocolate", "vanilla"],
+      brown: ["vanilla", "strawberry", "vanilla", "chocolate", "strawberry", "chocolate", "vanilla", "strawberry", "chocolate", "vanilla"],
+    },
+    components: [
+      {type: "push", flavor: "vanilla"},
+      {type: "push", flavor: "chocolate"},
+      {type: "push", flavor: "vanilla"},
+      {type: "push", flavor: "chocolate"},
+      {type: "push", flavor: "strawberry"},
+      {type: "if", condition: "red"},
+      {type: "if", condition: "yellow"},
+      {type: "if", condition: 4},
       {type: "if", condition: 8},
     ]
   },
