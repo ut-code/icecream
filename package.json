@@ -1,5 +1,5 @@
 {
-  "name": "",
+  "name": "icecream",
   "private": true,
   "type": "module",
   "scripts": {
@@ -12,8 +12,7 @@
     "cf-typegen": "wrangler types"
   },
   "dependencies": {
-    "@react-router/node": "7.12.0",
-    "@react-router/serve": "7.12.0",
+    "@react-router/cloudflare": "^7.12.0",
     "@xyflow/react": "^12.10.1",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
