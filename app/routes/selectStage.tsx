@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router";
 import { bubbles } from "~/bubbles";
 
-const TOTAL_STAGES = 20;
+const TOTAL_STAGES = 21;
 
 const PATH_WIDTH = 1100;
 const CENTER_X = PATH_WIDTH / 2;
@@ -234,22 +234,22 @@ export default function SelectStage() {
         </svg>
 
         {personDecorations.map((decor, index) => {
-        const pos = stagePositions[decor.stageIndex];
-        return (
-          <img
-            key={`person-decor-${index}`}
-            src={decor.src}
-            alt={decor.alt}
-            className="pointer-events-none absolute z-0 opacity-90"
-            style={{
-              position: "absolute",
-              width: decor.width,
-              left: pos.x + decor.offsetX,
-              top: pos.y + decor.offsetY,
-            }}
-          />
-        );
-      })}
+          const pos = stagePositions[decor.stageIndex];
+          return (
+            <img
+              key={`person-decor-${index}`}
+              src={decor.src}
+              alt={decor.alt}
+              className="pointer-events-none absolute z-0 opacity-90"
+              style={{
+                position: "absolute",
+                width: decor.width,
+                left: pos.x + decor.offsetX,
+                top: pos.y + decor.offsetY,
+              }}
+            />
+          );
+        })}
 
         {stagePositions.map((pos, i) => {
           const stageNum = i + 1;

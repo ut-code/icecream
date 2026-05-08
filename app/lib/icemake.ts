@@ -113,7 +113,6 @@ function runGraphExecution(
       let branchTaken: boolean | undefined;
       if (children != null && typeof children !== "number") {
         let condition = false;
-        // ifノードの条件を、色 / 部分配列一致 / 個数で評価する
         if (component.type === "if") {
           const cond: ConeColor | Flavor[] | number = component.condition;
           if (typeof cond === "string") {

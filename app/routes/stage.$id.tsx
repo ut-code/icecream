@@ -106,7 +106,15 @@ function getComponentSrc(
   return { src: "" };
 }
 
-function ConeStack({ color, stack }: { color: ConeColor; stack: Flavor[] }) {
+function ConeStack({
+  color,
+  stack,
+}: {
+  color: ConeColor;
+  stack: Flavor[] | null;
+}) {
+  if (stack === null) return null;
+
   return (
     <div className="flex flex-col-reverse items-center">
       <img src={`/cone_${color}.png`} alt="" className="h-10" />
@@ -147,11 +155,16 @@ function StraightNode({ data }: NodeProps<AppNode>) {
     <div className="group flex flex-col items-center relative">
       <button
         type="button"
-        className={`pixel-btn pixel-btn-small absolute -top-0 -right-10 z-10 ${data.onDelete
+        className={`pixel-btn pixel-btn-small absolute -top-0 -right-10 z-10 ${
+          data.onDelete
             ? "opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto"
             : "opacity-0 pointer-events-none"
-          }`}
-        style={{ fontSize: "0.75rem", padding: "0.25rem 0.5rem", lineHeight: 1 }}
+        }`}
+        style={{
+          fontSize: "0.75rem",
+          padding: "0.25rem 0.5rem",
+          lineHeight: 1,
+        }}
         onClick={() => data.onDelete?.()}
         aria-label="ノードを削除"
       >
@@ -201,11 +214,16 @@ function SplitNode({ data }: NodeProps<AppNode>) {
     <div className="group flex flex-col items-center relative">
       <button
         type="button"
-        className={`pixel-btn pixel-btn-small absolute -top-0 -right-15 z-10 ${data.onDelete
+        className={`pixel-btn pixel-btn-small absolute -top-0 -right-15 z-10 ${
+          data.onDelete
             ? "opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto"
             : "opacity-0 pointer-events-none"
-          }`}
-        style={{ fontSize: "0.75rem", padding: "0.25rem 0.5rem", lineHeight: 1 }}
+        }`}
+        style={{
+          fontSize: "0.75rem",
+          padding: "0.25rem 0.5rem",
+          lineHeight: 1,
+        }}
         onClick={() => data.onDelete?.()}
         aria-label="ノードを削除"
       >
@@ -340,7 +358,7 @@ function checkClear(
 }
 
 type AnimSegment = {
-  stackAfter: Flavor[];
+  stackAfter: Flavor[] | null;
   durationMs: number;
   componentIndex?: number;
   branchTaken?: boolean;
@@ -364,7 +382,7 @@ type FlyingConeRender = {
   color: ConeColor;
   x: number;
   y: number;
-  stack: Flavor[];
+  stack: Flavor[] | null;
 };
 
 type TransitCone = {
@@ -631,12 +649,12 @@ function StageInner({
   const [remainedComponentIdxs, setRemainedComponentIdxs] = useState<number[]>([
     ...Array(stageData.components.length).keys(),
   ]);
-  const [nodes, setNodes, onNodesChange] = useNodesState<AppNode>(
-    createInitialNodes(),
-  );
+  const [nodes, setNodes, onNodesChange] =
+    useNodesState<AppNode>(createInitialNodes());
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const { screenToFlowPosition, getViewport, setViewport } = useReactFlow();
   const [isClear, setIsClear] = useState(false);
+  const [showClear, setShowClear] = useState(false);
   const [failMessage, setFailMessage] = useState<React.ReactNode>("");
   const [isAnimating, setIsAnimating] = useState(false);
   const [flyingCones, setFlyingCones] = useState<FlyingConeRender[]>([]);
@@ -655,19 +673,27 @@ function StageInner({
   >([]);
   const [paletteEntries, setPaletteEntries] = useState<PaletteEntry[]>([]);
   const [hoveredEdgeId, setHoveredEdgeId] = useState<string | null>(null);
-  const [dragOverlayNode, setDragOverlayNode] = useState<DragOverlayNode | null>(null);
+  const [dragOverlayNode, setDragOverlayNode] =
+    useState<DragOverlayNode | null>(null);
   const nodeTypes = useMemo(
     () => ({ start: StartNode, straight: StraightNode, split: SplitNode }),
     [],
   );
 
-  function CustomEdge({ id, sourceX, sourceY, targetX, targetY, style }: EdgeProps) {
+  function CustomEdge({
+    id,
+    sourceX,
+    sourceY,
+    targetX,
+    targetY,
+    style,
+  }: EdgeProps) {
     const [edgePath] = getStraightPath({ sourceX, sourceY, targetX, targetY });
     const midX = (sourceX + targetX) / 2;
     const midY = (sourceY + targetY) / 2;
     const buttonWidth = 60;
     const buttonHeight = 24;
-    const isDeleteVisible = !isAnimating && hoveredEdgeId === id;
+    const isDeleteVisible = !isAnimating && !isClear && hoveredEdgeId === id;
 
     return (
       <>
@@ -711,9 +737,13 @@ function StageInner({
             <button
               type="button"
               className="pixel-btn pixel-btn-small"
-              style={{ fontSize: "0.75rem", padding: "0.25rem 0.5rem", lineHeight: 1 }}
+              style={{
+                fontSize: "0.75rem",
+                padding: "0.25rem 0.5rem",
+                lineHeight: 1,
+              }}
               onClick={() => {
-                if (isAnimating) return;
+                if (isAnimating || isClear) return;
                 setEdges((edges) => edges.filter((e) => e.id !== id));
               }}
               aria-label="エッジを削除"
@@ -726,10 +756,7 @@ function StageInner({
     );
   }
 
-  const edgeTypes = useMemo(
-    () => ({ custom: CustomEdge }),
-    [hoveredEdgeId],
-  );
+  const edgeTypes = useMemo(() => ({ custom: CustomEdge }), [hoveredEdgeId]);
 
   const renderedNodes = useMemo(
     () =>
@@ -748,7 +775,11 @@ function StageInner({
 
   const onConnect: OnConnect = useCallback(
     (params) => {
-      const style = { stroke: "#6b7280", strokeWidth: 10, strokeLinecap: "round" as const };
+      const style = {
+        stroke: "#6b7280",
+        strokeWidth: 10,
+        strokeLinecap: "round" as const,
+      };
 
       setEdges((eds) => {
         const sourceNode = nodes.find((n) => n.id === params.source);
@@ -1017,6 +1048,7 @@ function StageInner({
     setNodes(createInitialNodes());
     setEdges([]);
     setIsClear(false);
+    setShowClear(false);
     setFailMessage("");
     setIsAnimating(false);
     setFlyingCones([]);
@@ -1076,7 +1108,7 @@ function StageInner({
   };
 
   const handleExecute = () => {
-    if (isAnimating) return;
+    if (isAnimating || isClear) return;
 
     // Require all components to be placed before execution
     if (remainedComponentIdxs.length > 0) {
@@ -1088,9 +1120,8 @@ function StageInner({
           </ruby>
           を
           <ruby>
-            使
-            <rt>つか</rt>
-          </ruby> 
+            使<rt>つか</rt>
+          </ruby>
           わないと
           <ruby>
             実行
@@ -1184,8 +1215,7 @@ function StageInner({
           </ruby>
           を
           <ruby>
-            使
-            <rt>つか</rt>
+            使<rt>つか</rt>
           </ruby>
           わないと
           <ruby>
@@ -1212,6 +1242,7 @@ function StageInner({
 
     setFailMessage("");
     setIsClear(false);
+    setShowClear(false);
     setIsAnimating(true);
     setPaletteEntries([]);
     setTransitConeRenders([]);
@@ -1286,19 +1317,23 @@ function StageInner({
         const py = seg.y1 + (seg.y2 - seg.y1) * progress;
 
         const stack =
-          progress >= 1
+          seg.isNodePause && seg.stackAfter === null
+            ? null
+            : progress >= 1
             ? seg.stackAfter
             : cone.currentSegment > 0
               ? cone.segments[cone.currentSegment - 1].stackAfter
               : [];
 
-        rendered.push({
-          id: cone.id,
-          color: cone.color,
-          x: px * viewport.zoom + viewport.x,
-          y: py * viewport.zoom + viewport.y,
-          stack,
-        });
+        if (stack !== null) {
+          rendered.push({
+            id: cone.id,
+            color: cone.color,
+            x: px * viewport.zoom + viewport.x,
+            y: py * viewport.zoom + viewport.y,
+            stack,
+          });
+        }
 
         if (progress >= 1) {
           cone.currentSegment++;
@@ -1330,6 +1365,7 @@ function StageInner({
           const targetX = slotRect.left - outerRect.left + slotRect.width / 2;
           const targetY = slotRect.top - outerRect.top + slotRect.height / 2;
           const lastSeg = cone.segments[cone.segments.length - 1];
+          if (lastSeg.stackAfter === null) continue;
           anim.transitCones.push({
             id: cone.id,
             color: cone.color,
@@ -1399,6 +1435,7 @@ function StageInner({
         resetAnimation();
         if (checkClear(stageData.mission, anim.result)) {
           setIsClear(true);
+          setShowClear(true);
         } else {
           setFailMessage(
             <>
@@ -1431,6 +1468,7 @@ function StageInner({
 
   const handleNavigate = (path: string) => {
     setIsClear(false);
+    setShowClear(false);
     setFailMessage("");
     navigate(path);
   };
@@ -1502,22 +1540,22 @@ function StageInner({
           edges={edges}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
-          onNodesChange={isAnimating ? undefined : onNodesChange}
-          onEdgesChange={isAnimating ? undefined : onEdgesChange}
+          onNodesChange={isAnimating || isClear ? undefined : onNodesChange}
+          onEdgesChange={isAnimating || isClear ? undefined : onEdgesChange}
           onEdgeMouseEnter={(_event, edge) => setHoveredEdgeId(edge.id)}
           onEdgeMouseLeave={(_event, edge) =>
             setHoveredEdgeId((prev) => (prev === edge.id ? null : prev))
           }
-          onConnect={isAnimating ? undefined : onConnect}
-          onDrop={isAnimating ? undefined : onDrop}
-          onDragOver={isAnimating ? undefined : onDragOver}
-          nodesDraggable={!isAnimating}
-          nodesConnectable={!isAnimating}
-          elementsSelectable={!isAnimating}
-          panOnDrag={!isAnimating}
-          zoomOnScroll={!isAnimating}
-          zoomOnPinch={!isAnimating}
-          zoomOnDoubleClick={!isAnimating}
+          onConnect={isAnimating || isClear ? undefined : onConnect}
+          onDrop={isAnimating || isClear ? undefined : onDrop}
+          onDragOver={isAnimating || isClear ? undefined : onDragOver}
+          nodesDraggable={!isAnimating && !isClear}
+          nodesConnectable={!isAnimating && !isClear}
+          elementsSelectable={!isAnimating && !isClear}
+          panOnDrag={!isAnimating && !isClear}
+          zoomOnScroll={!isAnimating && !isClear}
+          zoomOnPinch={!isAnimating && !isClear}
+          zoomOnDoubleClick={!isAnimating && !isClear}
           onNodeDrag={onNodeDrag}
           onNodeDragStart={onNodeDragStart}
           onNodeDragStop={onNodeDragStop}
@@ -1534,8 +1572,7 @@ function StageInner({
           }}
           connectionLineType={ConnectionLineType.Straight}
           defaultViewport={DEFAULT_VIEWPORT}
-        >
-        </ReactFlow>
+        ></ReactFlow>
 
         {flyingCones.map((cone) => (
           <div
@@ -1566,14 +1603,15 @@ function StageInner({
                 ref={(el) => {
                   if (el) paletteSlotRefs.current.set(color, el);
                 }}
-                className={`border-2 rounded-lg p-2 flex flex-col items-center min-h-32 justify-center ${allArrivedToPalette
+                className={`border-2 rounded-lg p-2 flex flex-col items-center min-h-32 justify-center ${
+                  allArrivedToPalette
                     ? isMatch
                       ? "border-green-500 bg-green-50"
                       : "border-red-500 bg-red-50"
                     : entry
                       ? "border-gray-300"
                       : "border-dashed border-gray-300"
-                  }`}
+                }`}
               >
                 {entry ? (
                   <ConeStack color={entry.color} stack={entry.stack} />
@@ -1709,39 +1747,59 @@ function StageInner({
             ■
           </button>
         )}
-        <button
-          type="button"
-          className="pixel-btn pixel-btn-small pixel-btn-secondary"
-          onClick={() => {
-            const idx = SPEED_OPTIONS.findIndex((o) => o.multiplier === speedMultiplier);
-            const next = SPEED_OPTIONS[(idx + 1) % SPEED_OPTIONS.length];
-            setSpeedMultiplier(next.multiplier);
-            speedRef.current = next.multiplier;
-          }}
-        >
-          {SPEED_OPTIONS.find((o) => o.multiplier === speedMultiplier)?.label ?? SPEED_OPTIONS[0].label}
-        </button>
-        <button
-          type="button"
-          className="pixel-btn"
-          onClick={handleExecute}
-          disabled={isAnimating}
-        >
-          {isAnimating ? (
-            <span>
+        {!isClear && (
+          <button
+            type="button"
+            className="pixel-btn pixel-btn-small pixel-btn-secondary"
+            onClick={() => {
+              const idx = SPEED_OPTIONS.findIndex(
+                (o) => o.multiplier === speedMultiplier,
+              );
+              const next = SPEED_OPTIONS[(idx + 1) % SPEED_OPTIONS.length];
+              setSpeedMultiplier(next.multiplier);
+              speedRef.current = next.multiplier;
+            }}
+          >
+            {SPEED_OPTIONS.find((o) => o.multiplier === speedMultiplier)
+              ?.label ?? SPEED_OPTIONS[0].label}
+          </button>
+        )}
+        {isClear ? (
+          nextStageExists && (
+            <button
+              type="button"
+              className="pixel-btn"
+              onClick={() => handleNavigate(`/stage/${stageId + 1}`)}
+            >
               <ruby>
-                実行中
-                <rt>じっこうちゅう</rt>
+                次<rt>つぎ</rt>
               </ruby>
-              ...
-            </span>
-          ) : (
-            <ruby>
-              実行
-              <rt>じっこう</rt>
-            </ruby>
-          )}
-        </button>
+              のステージへ →
+            </button>
+          )
+        ) : (
+          <button
+            type="button"
+            className="pixel-btn"
+            onClick={handleExecute}
+            disabled={isAnimating}
+          >
+            {isAnimating ? (
+              <span>
+                <ruby>
+                  実行中
+                  <rt>じっこうちゅう</rt>
+                </ruby>
+                ...
+              </span>
+            ) : (
+              <ruby>
+                実行
+                <rt>じっこう</rt>
+              </ruby>
+            )}
+          </button>
+        )}
       </div>
 
       {/* Fail message */}
@@ -1752,9 +1810,24 @@ function StageInner({
       )}
 
       {/* Clear overlay */}
-      {isClear && (
+      {showClear && (
         <div className="clear-overlay">
-          <div className="clear-modal">
+          <div className="clear-modal relative">
+            <button
+              type="button"
+              className="z-10 pixel-btn pixel-btn-small"
+              style={{
+                position: "absolute",
+                right: "-1rem",
+                top: "-1rem",
+                fontSize: "2rem",
+                padding: "0.5rem 1rem",
+                lineHeight: "2rem",
+              }}
+              onClick={() => setShowClear(false)}
+            >
+              ×
+            </button>
             <div className="font-[DotGothic16] text-4xl mb-6 text-gray-800">
               クリア！
             </div>
