@@ -155,7 +155,7 @@ function StraightNode({ data }: NodeProps<AppNode>) {
     <div className="group flex flex-col items-center relative">
       <button
         type="button"
-        className={`pixel-btn pixel-btn-small absolute -top-0 -right-10 z-10 ${
+        className={`pixel-btn pixel-btn-small absolute top-0 -right-10 z-10 ${
           data.onDelete
             ? "opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto"
             : "opacity-0 pointer-events-none"
@@ -214,7 +214,7 @@ function SplitNode({ data }: NodeProps<AppNode>) {
     <div className="group flex flex-col items-center relative">
       <button
         type="button"
-        className={`pixel-btn pixel-btn-small absolute -top-0 -right-15 z-10 ${
+        className={`pixel-btn pixel-btn-small absolute top-0 -right-15 z-10 ${
           data.onDelete
             ? "opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto"
             : "opacity-0 pointer-events-none"
@@ -1320,10 +1320,10 @@ function StageInner({
           seg.isNodePause && seg.stackAfter === null
             ? null
             : progress >= 1
-            ? seg.stackAfter
-            : cone.currentSegment > 0
-              ? cone.segments[cone.currentSegment - 1].stackAfter
-              : [];
+              ? seg.stackAfter
+              : cone.currentSegment > 0
+                ? cone.segments[cone.currentSegment - 1].stackAfter
+                : [];
 
         if (stack !== null) {
           rendered.push({
