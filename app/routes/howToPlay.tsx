@@ -4,7 +4,7 @@ import { useNavigate } from "react-router";
 export function meta() {
   return [
     { title: "あそびかた - アイスクリームゲーム" },
-    { name: "description", content: "ゲームの遊び方ページ（準備中）" },
+    { name: "description", content: "ゲームの遊び方ページ" },
   ];
 }
 // prettier-ignore
@@ -39,13 +39,13 @@ export default function HowToPlay() {
         <section className="mt-6 w-full max-w-3xl rounded-xl border border-gray-200 bg-white/80 p-6 shadow-sm backdrop-blur">
           <h2 className="mb-3 text-xl font-bold text-gray-800">ステージ<ruby>選<rt>せん</rt></ruby><ruby>択<rt>たく</rt></ruby></h2>
           <p className="mb-3 text-gray-700">
-            このゲームには、<ruby>全<rt>ぜん</rt></ruby><ruby>部<rt>ぶ</rt></ruby>で number <ruby>個<rt>こ</rt></ruby>のステージがあります。
+            このゲームには、<ruby>全<rt>ぜん</rt></ruby><ruby>部<rt>ぶ</rt></ruby>で 21 <ruby>個<rt>こ</rt></ruby>のステージがあります。
           </p>
           <p className="mb-3 text-gray-700">
-            ホーム<ruby>画<rt>が</rt></ruby><ruby>面<rt>めん</rt></ruby>の「ステージ<ruby>選<rt>せん</rt></ruby><ruby>択<rt>たく</rt></ruby>」ボタンを<ruby>押<rt>お</rt></ruby>すと、1〜number のステージ<ruby>番<rt>ばん</rt></ruby><ruby>号<rt>ごう</rt></ruby>が<ruby>並<rt>なら</rt></ruby>んだ<ruby>画<rt>が</rt></ruby><ruby>面<rt>めん</rt></ruby>に<ruby>移<rt>い</rt></ruby><ruby>動<rt>どう</rt></ruby>します。
+            ホーム<ruby>画<rt>が</rt></ruby><ruby>面<rt>めん</rt></ruby>の「ステージ<ruby>選<rt>せん</rt></ruby><ruby>択<rt>たく</rt></ruby>」ボタンを<ruby>押<rt>お</rt></ruby>すと、1〜21 のステージ<ruby>番<rt>ばん</rt></ruby><ruby>号<rt>ごう</rt></ruby>が<ruby>並<rt>なら</rt></ruby>んだ<ruby>画<rt>が</rt></ruby><ruby>面<rt>めん</rt></ruby>に<ruby>移<rt>い</rt></ruby><ruby>動<rt>どう</rt></ruby>します。
           </p>
           <p className="text-gray-700">
-            <ruby>遊<rt>あそ</rt></ruby>びたいステージの<ruby>番<rt>ばん</rt></ruby><ruby>号<rt>ごう</rt></ruby>をタップすると、<ruby>選<rt>えら</rt></ruby>んだステージのプレイが<ruby>開<rt>かい</rt></ruby><ruby>始<rt>し</rt></ruby>されます。
+            <ruby>遊<rt>あそ</rt></ruby>びたいステージの<ruby>番<rt>ばん</rt></ruby><ruby>号<rt>ごう</rt></ruby>をクリックすると、<ruby>選<rt>えら</rt></ruby>んだステージのプレイが<ruby>開<rt>かい</rt></ruby><ruby>始<rt>し</rt></ruby>されます。
           </p>
           <div className="text-center mt-4">
             <img src="/stage_select.png" alt="ステージ選択画面" className="inline-block w-128 h-64" />
@@ -167,7 +167,7 @@ export default function HowToPlay() {
                 <li>・ <ruby>桃<rt>もも</rt></ruby><ruby>色<rt>いろ</rt></ruby>：イチゴ</li>
               </ul>
               <p>
-                ただし、コーンの<ruby>上<rt>うえ</rt></ruby>にアイスが５<ruby>個<rt>こ</rt></ruby><ruby>以<rt>い</rt></ruby><ruby>上<rt>じょう</rt></ruby><ruby>載<rt>の</rt></ruby>っている<ruby>場<rt>ば</rt></ruby><ruby>合<rt>あい</rt></ruby>は、<ruby>新<rt>あらた</rt></ruby>しくアイスを<ruby>置<rt>お</rt></ruby>くことができません。
+                ただし、コーンの<ruby>上<rt>うえ</rt></ruby>にアイスが10<ruby>個<rt>こ</rt></ruby><ruby>以<rt>い</rt></ruby><ruby>上<rt>じょう</rt></ruby><ruby>載<rt>の</rt></ruby>っている<ruby>場<rt>ば</rt></ruby><ruby>合<rt>あい</rt></ruby>は、<ruby>新<rt>あらた</rt></ruby>しくアイスを<ruby>置<rt>お</rt></ruby>くことができません。
               </p>
             </div>
           </div>
