@@ -1187,26 +1187,40 @@ function StageInner({
     // Ensure every placed node is reachable from the start
     // components keys are component indexes for placed nodes
     const placedComponentIdxs = Object.keys(components).map((k) => Number(k));
-    const visited = new Set<number>();
-    const dfs = (ci: number | null) => {
-      if (ci === null || ci === undefined) return;
-      if (visited.has(ci)) return;
-      visited.add(ci);
-      const node = components[ci];
-      if (!node) return;
-      const ch = node.childrenIds;
-      if (!ch) return;
-      if (typeof ch === "object" && ("true" in ch || "false" in ch)) {
-        dfs((ch as { true: number | null; false: number | null }).true);
-        dfs((ch as { true: number | null; false: number | null }).false);
+     const search: number[] = [firstComponentId];
+    const visited: number[] = [];
+    const visitedSet = new Set<number>();
+
+    while (search.length > 0) {
+      const current = search.shift();
+      if (current === undefined || visitedSet.has(current)) continue;
+
+      visitedSet.add(current);
+      visited.push(current);
+
+      const node = components[current];
+      if (!node) continue;
+
+      const childIds = node.childrenIds;
+      if (childIds == null) continue;
+
+      const enqueue = (next: number | null) => {
+        if (next !== null && !visitedSet.has(next)) {
+          search.push(next);
+          console.log("Enqueueing component index:", current, "→" ,next);
+        }
+      };
+
+      if (typeof childIds === "object") {
+        enqueue(childIds.true);
+        enqueue(childIds.false);
       } else {
-        dfs(ch as number | null);
+        enqueue(childIds);
       }
-    };
+    }
 
-    dfs(firstComponentId);
-
-    if (placedComponentIdxs.length !== visited.size) {
+    if (placedComponentIdxs.length !== visitedSet.size) {
+      console.log("未到達の部品インデックス:", placedComponentIdxs.filter((i) => !visitedSet.has(i)));
       setFailMessage(
         <>
           <ruby>
