@@ -83,6 +83,7 @@ export default function HowToPlay() {
             <ruby>配<rt>はい</rt></ruby><ruby>置<rt>ち</rt></ruby>した<ruby>人<rt>ひと</rt></ruby><ruby>々<rt>びと</rt></ruby>は、その<ruby>下<rt>した</rt></ruby>にあるベルトコンベアを<ruby>別<rt>べつ</rt></ruby>の<ruby>人<rt>ひと</rt></ruby>やコーン<ruby>投<rt>とう</rt></ruby><ruby>入<rt>にゅう</rt></ruby><ruby>口<rt>ぐち</rt></ruby>と<ruby>繋<rt>つな</rt></ruby>げることで、アイスクリーム<ruby>作<rt>づく</rt></ruby>りを<ruby>手伝<rt>てつだ</rt></ruby>ってくれます。
             ベルトコンベアの<ruby>端<rt>はし</rt></ruby>をクリックしたまま、<ruby>別<rt>べつ</rt></ruby>のベルトコンベアの<ruby>端<rt>はし</rt></ruby>まで<ruby>持<rt>も</rt></ruby>っていくことでつなげることができます。
             <ruby>配<rt>はい</rt></ruby><ruby>置<rt>ち</rt></ruby>した<ruby>人<rt>ひと</rt></ruby><ruby>々<rt>びと</rt></ruby>や、つなげた<ruby>経路<rt>けいろ</rt></ruby>はホバーして出てくる×ボタンで<ruby>消<rt>け</rt></ruby>すことができます。
+            また、ドラッグして<ruby>下<rt>した</rt></ruby>にある<ruby>元<rt>もと</rt></ruby>の<ruby>場<rt>ば</rt></ruby><ruby>所<rt>しょ</rt></ruby>にドロップすることでも<ruby>消<rt>け</rt></ruby>すことができます。
           </p>
           <div className="text-center mt-4">
             <img src="/stage_screen.png" alt="ステージ画面の説明" className="inline-block w-128 h-64 mx-2" />
