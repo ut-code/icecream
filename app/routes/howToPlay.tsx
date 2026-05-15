@@ -244,10 +244,10 @@ export default function HowToPlay() {
     },
     
     {
-      title: "終わりに",
+      title: "<ruby>終<rt>お</rt></ruby>わりに",
       content: (
         <section className="mt-6 w-full max-w-3xl rounded-xl border border-gray-200 bg-white/80 p-6 shadow-sm backdrop-blur">
-          <h2 className="mb-3 text-xl font-bold text-gray-800">終わりに</h2>
+          <h2 className="mb-3 text-xl font-bold text-gray-800"><ruby>終<rt>お</rt></ruby>わりに</h2>
           <div className="text-gray-700">
             <p className="mb-2">
               これで<ruby>遊<rt>あそ</rt></ruby>び<ruby>方<rt>かた</rt></ruby>の<ruby>説<rt>せつ</rt></ruby><ruby>明<rt>めい</rt></ruby>は<ruby>終<rt>お</rt></ruby>わりです。           </p>
@@ -265,6 +265,40 @@ export default function HowToPlay() {
             <img src="/ice_chocolate.png" alt="チョコアイス" className="inline-block h-16 mx-2" />
             <img src="/cone_red.png" alt="コーン(赤)" className="inline-block h-16 mx-2" />
             <img src="/ice_strawberry.png" alt="イチゴアイス" className="inline-block h-16 mx-2" />
+          </div>
+          
+        </section>
+      ),
+    },
+
+    {
+      title: "<ruby>余<rt>よ</rt></ruby><ruby>談<rt>だん</rt></ruby>",
+      content: (
+        <section className="mt-6 w-full max-w-3xl rounded-xl border border-gray-200 bg-white/80 p-6 shadow-sm backdrop-blur">
+          <h2 className="mb-3 text-xl font-bold text-gray-800"><ruby>余<rt>よ</rt></ruby><ruby>談<rt>だん</rt></ruby></h2>
+          <div className="text-gray-700">
+            <p className="mb-2">
+              このゲームはプログラミングの「<ruby>配<rt>はい</rt></ruby><ruby>列<rt>れつ</rt></ruby>」をモチーフにしたゲームです。
+              そのため、<ruby>配<rt>はい</rt></ruby><ruby>列<rt>れつ</rt></ruby>の<ruby>概<rt>がい</rt></ruby><ruby>念<rt>ねん</rt></ruby>を<ruby>学<rt>まな</rt></ruby>びながら、アイスクリームを<ruby>作<rt>つく</rt></ruby>ることができます。
+            </p>
+            <p>
+              <ruby>配<rt>はい</rt></ruby><ruby>列<rt>れつ</rt></ruby>とは、<ruby>同<rt>どう</rt></ruby><ruby>種<rt>しゅ</rt></ruby><ruby>類<rt>るい</rt></ruby>のデータを<ruby>順<rt>じゅん</rt></ruby><ruby>序<rt>じょ</rt></ruby>に<ruby>並<rt>なら</rt></ruby>べたものです。
+              <ruby>例<rt>たと</rt></ruby>えば、<ruby>数<rt>すう</rt></ruby><ruby>字<rt>じ</rt></ruby>を<ruby>順<rt>じゅん</rt></ruby><ruby>番<rt>ばん</rt></ruby>に<ruby>並<rt>なら</rt></ruby>べた<ruby>配<rt>はい</rt></ruby><ruby>列<rt>れつ</rt></ruby>は「1, 2, 3, 4, 5」のようになります。
+              このゲームでは、コーンの<ruby>上<rt>うえ</rt></ruby>に<ruby>載<rt>の</rt></ruby>っているアイスが<ruby>要<rt>よう</rt></ruby><ruby>素<rt>そ</rt></ruby>で、コーンの<ruby>色<rt>いろ</rt></ruby>が<ruby>配<rt>はい</rt></ruby><ruby>列<rt>れつ</rt></ruby>の<ruby>名<rt>な</rt></ruby><ruby>前<rt>まえ</rt></ruby>の<ruby>役<rt>やく</rt></ruby><ruby>割<rt>わり</rt></ruby>を<ruby>担<rt>にな</rt></ruby>っています。
+            </p>
+            <p>
+              <ruby>例<rt>たと</rt></ruby>えば、アイスをのせてくれる<ruby>人<rt>ひと</rt></ruby>は<ruby>配<rt>はい</rt></ruby><ruby>列<rt>れつ</rt></ruby>の<ruby>操<rt>そう</rt></ruby><ruby>作<rt>さ</rt></ruby>では、<ruby>配<rt>はい</rt></ruby><ruby>列<rt>れつ</rt></ruby>に<ruby>要<rt>よう</rt></ruby><ruby>素<rt>そ</rt></ruby>を<ruby>加<rt>くわ</rt></ruby>える「push」にあたります。<br />
+              また、コーンを<ruby>分<rt>わ</rt></ruby>けて<ruby>流<rt>なが</rt></ruby>す<ruby>人<rt>ひと</rt></ruby>は、<ruby>条件<rt>じょうけん</rt></ruby>を<ruby>満<rt>み</rt></ruby>たしているかどうかの<ruby>判<rt>はん</rt></ruby><ruby>断<rt>だん</rt></ruby>を<ruby>行<rt>おこ</rt></ruby>う「if」にあたります。<br />
+              そして、アイスを<ruby>食<rt>た</rt></ruby>べてしまう<ruby>人<rt>ひと</rt></ruby>は、<ruby>配<rt>はい</rt></ruby><ruby>列<rt>れつ</rt></ruby>の<ruby>要<rt>よう</rt></ruby><ruby>素<rt>そ</rt></ruby>を<ruby>削<rt>さく</rt></ruby><ruby>除<rt>じょ</rt></ruby>する「pop」にあたります。<br />
+            </p>
+            <p>
+              このゲームをプレイすることによって、プレイヤーが<ruby>配<rt>はい</rt></ruby><ruby>列<rt>れつ</rt></ruby>について<ruby>少<rt>すこ</rt></ruby>しでも<ruby>理<rt>り</rt></ruby><ruby>解<rt>かい</rt></ruby>したり、<ruby>配<rt>はい</rt></ruby><ruby>列<rt>れつ</rt></ruby>に<ruby>対<rt>たい</rt></ruby>して<ruby>親<rt>した</rt></ruby>しみを<ruby>持<rt>も</rt></ruby>っていただければ<ruby>幸<rt>さいわ</rt></ruby>いです。
+            </p>
+            <p>
+              ここまで<ruby>読<rt>よ</rt></ruby>んでいただきありがとうございました！
+            </p>
+          </div>
+          <div className="text-center mt-4">
           </div>
           
         </section>
