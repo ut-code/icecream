@@ -178,7 +178,7 @@ function StraightNode({ data }: NodeProps<AppNode>) {
 function StraightNodeVisual({ data }: { data: AppNode["data"] }) {
   return (
     <div className="flex flex-col items-center relative">
-      <div className="bg-amber-100 rounded-sm border border-amber-500 h-24 w-24 flex items-center justify-center relative">
+      <div className="rounded-sm border border-amber-500 h-24 w-24 flex items-center justify-center relative">
         {data.src ? (
           <img src={data.src} alt="" className="h-16" />
         ) : (
@@ -237,7 +237,7 @@ function SplitNode({ data }: NodeProps<AppNode>) {
 function SplitNodeVisual({ data }: { data: AppNode["data"] }) {
   return (
     <div className="flex flex-col items-center relative">
-      <div className="bg-amber-100 rounded-sm border border-amber-500 h-36 w-36 flex items-center justify-center relative">
+      <div className="rounded-sm border border-amber-500 h-36 w-36 flex items-center justify-center relative">
         {data.src ? (
           <img src={data.src} alt="" className="h-30" />
         ) : (
@@ -673,8 +673,6 @@ function StageInner({
   >([]);
   const [paletteEntries, setPaletteEntries] = useState<PaletteEntry[]>([]);
   const [hoveredEdgeId, setHoveredEdgeId] = useState<string | null>(null);
-  const [dragOverlayNode, setDragOverlayNode] =
-    useState<DragOverlayNode | null>(null);
   const nodeTypes = useMemo(
     () => ({ start: StartNode, straight: StraightNode, split: SplitNode }),
     [],
@@ -758,21 +756,6 @@ function StageInner({
 
   const edgeTypes = useMemo(() => ({ custom: CustomEdge }), [hoveredEdgeId]);
 
-  const renderedNodes = useMemo(
-    () =>
-      nodes.map((node) => {
-        if (node.id !== dragOverlayNode?.id) return node;
-        return {
-          ...node,
-          style: {
-            ...node.style,
-            opacity: 0,
-          },
-        };
-      }),
-    [nodes, dragOverlayNode?.id],
-  );
-
   const onConnect: OnConnect = useCallback(
     (params) => {
       const style = {
@@ -822,62 +805,6 @@ function StageInner({
     event.dataTransfer.dropEffect = "move";
   }, []);
 
-  const onNodeDragStart: OnNodeDrag<AppNode> = useCallback(
-    (_event, node) => {
-      if (node.id === "start") return;
-      if (!outerContainerRef.current || !reactFlowWrapper.current) return;
-
-      const outerRect = outerContainerRef.current.getBoundingClientRect();
-      const wrapperRect = reactFlowWrapper.current.getBoundingClientRect();
-      const viewport = getViewport();
-
-      setDragOverlayNode({
-        id: node.id,
-        type: node.type,
-        data: node.data,
-        x:
-          wrapperRect.left -
-          outerRect.left +
-          node.position.x * viewport.zoom +
-          viewport.x,
-        y:
-          wrapperRect.top -
-          outerRect.top +
-          node.position.y * viewport.zoom +
-          viewport.y,
-      });
-    },
-    [getViewport],
-  );
-
-  const onNodeDrag: OnNodeDrag<AppNode> = useCallback(
-    (_event, node) => {
-      if (node.id === "start") return;
-      if (!outerContainerRef.current || !reactFlowWrapper.current) return;
-
-      const outerRect = outerContainerRef.current.getBoundingClientRect();
-      const wrapperRect = reactFlowWrapper.current.getBoundingClientRect();
-      const viewport = getViewport();
-
-      setDragOverlayNode({
-        id: node.id,
-        type: node.type,
-        data: node.data,
-        x:
-          wrapperRect.left -
-          outerRect.left +
-          node.position.x * viewport.zoom +
-          viewport.x,
-        y:
-          wrapperRect.top -
-          outerRect.top +
-          node.position.y * viewport.zoom +
-          viewport.y,
-      });
-    },
-    [getViewport],
-  );
-
   const removePlacedNode = useCallback(
     (nodeId: string, componentIndex: number) => {
       setNodes((prev) => prev.filter((n) => n.id !== nodeId));
@@ -894,18 +821,14 @@ function StageInner({
 
   const onNodeDragStop: OnNodeDrag<AppNode> = useCallback(
     (_event, node) => {
-      setDragOverlayNode(null);
       if (node.id === "start") return;
       if (!paletteTrayRef.current || !reactFlowWrapper.current) return;
-
       const trayTop = paletteTrayRef.current.getBoundingClientRect().top;
       const wrapperTop = reactFlowWrapper.current.getBoundingClientRect().top;
       const viewport = getViewport();
       const nodeHeight = node.type === "split" ? 176 : 120;
-
       const nodeTop = wrapperTop + node.position.y * viewport.zoom + viewport.y;
       const nodeBottom = nodeTop + nodeHeight * viewport.zoom;
-
       if (nodeBottom >= trayTop) {
         removePlacedNode(node.id, node.data.componentIndex);
       }
@@ -1536,7 +1459,7 @@ function StageInner({
       >
         <ReactFlow
           className="stage-flow"
-          nodes={renderedNodes}
+          nodes={nodes}
           edges={edges}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
@@ -1556,8 +1479,6 @@ function StageInner({
           zoomOnScroll={!isAnimating && !isClear}
           zoomOnPinch={!isAnimating && !isClear}
           zoomOnDoubleClick={!isAnimating && !isClear}
-          onNodeDrag={onNodeDrag}
-          onNodeDragStart={onNodeDragStart}
           onNodeDragStop={onNodeDragStop}
           nodeDragThreshold={5}
           autoPanOnNodeDrag={false}
@@ -1627,23 +1548,6 @@ function StageInner({
           })}
         </div>
       </div>
-
-      {dragOverlayNode && (
-        <div
-          className="absolute pointer-events-none z-30"
-          style={{
-            left: dragOverlayNode.x,
-            top: dragOverlayNode.y,
-            transform: "translate(0, 0)",
-          }}
-        >
-          {dragOverlayNode.type === "split" ? (
-            <SplitNodeVisual data={dragOverlayNode.data} />
-          ) : (
-            <StraightNodeVisual data={dragOverlayNode.data} />
-          )}
-        </div>
-      )}
 
       {/* Transit cones (flying to palette) */}
       {transitConeRenders.map((cone) => (
