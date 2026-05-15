@@ -1536,48 +1536,50 @@ function StageInner({
       className="w-full h-full bg-amber-100 flex flex-col overflow-hidden relative"
       ref={outerContainerRef}
     >
-      <div className="absolute top-2 left-2 z-20 flex items-start gap-4">
-        <button
-          type="button"
-          className="pixel-btn pixel-btn-small"
-          onClick={() => handleNavigate("/select-stage")}
-        >
-          ← もどる
-        </button>
-
-        {/* Mission display */}
-        <div className="bg-white/90 p-3 backdrop-blur-sm rounded-lg border-2 border-gray-300 shadow-lg text-gray-800">
-          <div className="flex items-start gap-4">
-            <div className="font-[DotGothic16] text-2xl shrink-0">
-              <ruby>
-                注文
-                <rt>ちゅうもん</rt>
-              </ruby>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              {(
-                Object.entries(stageData.mission) as [ConeColor, Flavor[]][]
-              ).map(([color, flavors]) => (
-                <div key={color} className="px-2 py-1 min-w-16">
-                  <div className="flex flex-col-reverse items-center">
-                    <img
-                      src={`/cone_${color}.png`}
-                      alt=""
-                      className="h-12 select-none"
-                    />
-                    {flavors.map((flavor, i) => (
-                      <img
-                        key={`${color}-${flavor}-${i}`}
-                        src={`/ice_${flavor}.png`}
-                        alt=""
-                        className="h-9 -mb-3 select-none"
-                        style={{ zIndex: i + 1 }}
-                      />
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
+      <div className="absolute top-2 left-2 z-20 bg-white/90 px-5 py-4 backdrop-blur-sm rounded-lg border-2 border-gray-300 shadow-lg text-gray-800">
+        <div className="flex items-center gap-8 mb-6">
+          <button
+            type="button"
+            className="pixel-btn pixel-btn-small"
+            onClick={() => handleNavigate("/select-stage")}
+          >
+            ← もどる
+          </button>
+          <div className="font-[DotGothic16] text-xl">
+            ステージ {stageId}
+          </div>
+        </div>
+        <div className="flex items-start gap-4">
+          <div className="font-[DotGothic16] text-2xl shrink-0">
+            <ruby>
+              注文
+              <rt>ちゅうもん</rt>
+            </ruby>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            {(
+              Object.entries(stageData.mission) as [ConeColor, Flavor[]][]
+            ).map(([color, flavors]) => (
+              <div
+                key={color}
+                className="flex flex-col-reverse items-center px-2 py-1 min-w-16"
+              >
+                <img
+                  src={`/cone_${color}.png`}
+                  alt=""
+                  className="h-12 select-none"
+                />
+                {flavors.map((flavor, i) => (
+                  <img
+                    key={`${color}-${flavor}-${i}`}
+                    src={`/ice_${flavor}.png`}
+                    alt=""
+                    className="h-9 -mb-3 select-none"
+                    style={{ zIndex: i + 1 }}
+                  />
+                ))}
+              </div>
+            ))}
           </div>
         </div>
       </div>
