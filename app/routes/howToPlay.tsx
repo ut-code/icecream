@@ -67,7 +67,7 @@ export default function HowToPlay() {
             このミッションを<ruby>達<rt>たっ</rt></ruby><ruby>成<rt>せい</rt></ruby>できるよう、<ruby>人々<rt>ひとびと</rt></ruby>を<ruby>上手<rt>じょうず</rt></ruby>に<ruby>配<rt>はい</rt></ruby><ruby>置<rt>ち</rt></ruby>しましょう。
           </p>
           <div className="text-center mt-4">
-            <img src="/stage_screen.png" alt="ステージ画面の説明" className="inline-block w-128 h-64 mx-2" />
+            <img src="/stage_screen1.png" alt="ステージ画面の説明1" className="inline-block w-128 h-64 mx-2" />
           </div>
         </section>
       ),
@@ -86,7 +86,7 @@ export default function HowToPlay() {
             また、ドラッグして<ruby>下<rt>した</rt></ruby>にある<ruby>元<rt>もと</rt></ruby>の<ruby>場<rt>ば</rt></ruby><ruby>所<rt>しょ</rt></ruby>にドロップすることでも<ruby>消<rt>け</rt></ruby>すことができます。
           </p>
           <div className="text-center mt-4">
-            <img src="/stage_screen.png" alt="ステージ画面の説明" className="inline-block w-128 h-64 mx-2" />
+            <img src="/stage_screen2.png" alt="ステージ画面の説明2" className="inline-block w-128 h-64 mx-2" />
           </div>
         </section>
       ),
@@ -106,7 +106,7 @@ export default function HowToPlay() {
             もし<ruby>失<rt>しっ</rt></ruby><ruby>敗<rt>ぱい</rt></ruby>してしまっても、<ruby>何<rt>なん</rt></ruby><ruby>度<rt>ど</rt></ruby>でもやり<ruby>直<rt>なお</rt></ruby>せます。
           </p>
           <div className="text-center mt-4">
-            <img src="/stage_screen.png" alt="ステージ画面の説明" className="inline-block w-128 h-64 mx-2" />
+            <img src="/stage_screen3.png" alt="ステージ画面の説明3" className="inline-block w-128 h-64 mx-2" />
           </div>
         </section>
       ),
@@ -118,10 +118,11 @@ export default function HowToPlay() {
           <h2 className="mb-3 text-xl font-bold text-gray-800">ステージ<ruby>画<rt>が</rt></ruby><ruby>面<rt>めん</rt></ruby>Ⅳ</h2>
           <p className="text-gray-700">
             <ruby>別<rt>べつ</rt></ruby>のステージで<ruby>遊<rt>あそ</rt></ruby>びたくなった<ruby>場<rt>ば</rt></ruby><ruby>合<rt>あい</rt></ruby>は、<ruby>左<rt>ひだり</rt></ruby><ruby>上<rt>うえ</rt></ruby>の「<ruby>戻<rt>もど</rt></ruby>る」ボタンを<ruby>押<rt>お</rt></ruby>してください。
-            ステージ<ruby>選<rt>せん</rt></ruby><ruby>択<rt>たく</rt></ruby><ruby>画<rt>が</rt></ruby><ruby>面<rt>めん</rt></ruby>に<ruby>戻<rt>もど</rt></ruby>ることができます。
+            ステージ<ruby>選<rt>せん</rt></ruby><ruby>択<rt>たく</rt></ruby><ruby>画<rt>が</rt></ruby><ruby>面<rt>めん</rt></ruby>に<ruby>戻<rt>もど</rt></ruby>ることができます。<br />
+            またクリアすると、<ruby>次<rt>つぎ</rt></ruby>のステージを<ruby>遊<rt>あそ</rt></ruby>ぶかステージ<ruby>選<rt>せん</rt></ruby><ruby>択<rt>たく</rt></ruby><ruby>画<rt>が</rt></ruby><ruby>面<rt>めん</rt></ruby>に<ruby>戻<rt>もど</rt></ruby>るかを<ruby>選<rt>えら</rt></ruby>ぶことができます
           </p>
           <div className="text-center mt-4">
-            <img src="/stage_screen.png" alt="ステージ画面の説明" className="inline-block w-128 h-64 mx-2" />
+            <img src="/stage_screen4.png" alt="ステージ画面の説明4" className="inline-block w-128 h-64 mx-2" />
           </div>
         </section>
       ),
