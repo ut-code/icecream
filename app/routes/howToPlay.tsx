@@ -4,7 +4,7 @@ import { useNavigate } from "react-router";
 export function meta() {
   return [
     { title: "あそびかた - アイスクリームゲーム" },
-    { name: "description", content: "ゲームの遊び方ページ（準備中）" },
+    { name: "description", content: "ゲームの遊び方ページ" },
   ];
 }
 // prettier-ignore
@@ -39,13 +39,13 @@ export default function HowToPlay() {
         <section className="mt-6 w-full max-w-3xl rounded-xl border border-gray-200 bg-white/80 p-6 shadow-sm backdrop-blur">
           <h2 className="mb-3 text-xl font-bold text-gray-800">ステージ<ruby>選<rt>せん</rt></ruby><ruby>択<rt>たく</rt></ruby></h2>
           <p className="mb-3 text-gray-700">
-            このゲームには、<ruby>全<rt>ぜん</rt></ruby><ruby>部<rt>ぶ</rt></ruby>で number <ruby>個<rt>こ</rt></ruby>のステージがあります。
+            このゲームには、<ruby>全<rt>ぜん</rt></ruby><ruby>部<rt>ぶ</rt></ruby>で 21 <ruby>個<rt>こ</rt></ruby>のステージがあります。
           </p>
           <p className="mb-3 text-gray-700">
-            ホーム<ruby>画<rt>が</rt></ruby><ruby>面<rt>めん</rt></ruby>の「ステージ<ruby>選<rt>せん</rt></ruby><ruby>択<rt>たく</rt></ruby>」ボタンを<ruby>押<rt>お</rt></ruby>すと、1〜number のステージ<ruby>番<rt>ばん</rt></ruby><ruby>号<rt>ごう</rt></ruby>が<ruby>並<rt>なら</rt></ruby>んだ<ruby>画<rt>が</rt></ruby><ruby>面<rt>めん</rt></ruby>に<ruby>移<rt>い</rt></ruby><ruby>動<rt>どう</rt></ruby>します。
+            ホーム<ruby>画<rt>が</rt></ruby><ruby>面<rt>めん</rt></ruby>の「ステージ<ruby>選<rt>せん</rt></ruby><ruby>択<rt>たく</rt></ruby>」ボタンを<ruby>押<rt>お</rt></ruby>すと、1〜21 のステージ<ruby>番<rt>ばん</rt></ruby><ruby>号<rt>ごう</rt></ruby>が<ruby>並<rt>なら</rt></ruby>んだ<ruby>画<rt>が</rt></ruby><ruby>面<rt>めん</rt></ruby>に<ruby>移<rt>い</rt></ruby><ruby>動<rt>どう</rt></ruby>します。
           </p>
           <p className="text-gray-700">
-            <ruby>遊<rt>あそ</rt></ruby>びたいステージの<ruby>番<rt>ばん</rt></ruby><ruby>号<rt>ごう</rt></ruby>をタップすると、<ruby>選<rt>えら</rt></ruby>んだステージのプレイが<ruby>開<rt>かい</rt></ruby><ruby>始<rt>し</rt></ruby>されます。
+            <ruby>遊<rt>あそ</rt></ruby>びたいステージの<ruby>番<rt>ばん</rt></ruby><ruby>号<rt>ごう</rt></ruby>をクリックすると、<ruby>選<rt>えら</rt></ruby>んだステージのプレイが<ruby>開<rt>かい</rt></ruby><ruby>始<rt>し</rt></ruby>されます。
           </p>
           <div className="text-center mt-4">
             <img src="/stage_select.png" alt="ステージ選択画面" className="inline-block w-128 h-64" />
@@ -67,7 +67,7 @@ export default function HowToPlay() {
             このミッションを<ruby>達<rt>たっ</rt></ruby><ruby>成<rt>せい</rt></ruby>できるよう、<ruby>人々<rt>ひとびと</rt></ruby>を<ruby>上手<rt>じょうず</rt></ruby>に<ruby>配<rt>はい</rt></ruby><ruby>置<rt>ち</rt></ruby>しましょう。
           </p>
           <div className="text-center mt-4">
-            <img src="/stage_screen.png" alt="ステージ画面の説明" className="inline-block w-128 h-64 mx-2" />
+            <img src="/stage_screen1.png" alt="ステージ画面の説明1" className="inline-block w-128 h-64 mx-2" />
           </div>
         </section>
       ),
@@ -83,9 +83,10 @@ export default function HowToPlay() {
             <ruby>配<rt>はい</rt></ruby><ruby>置<rt>ち</rt></ruby>した<ruby>人<rt>ひと</rt></ruby><ruby>々<rt>びと</rt></ruby>は、その<ruby>下<rt>した</rt></ruby>にあるベルトコンベアを<ruby>別<rt>べつ</rt></ruby>の<ruby>人<rt>ひと</rt></ruby>やコーン<ruby>投<rt>とう</rt></ruby><ruby>入<rt>にゅう</rt></ruby><ruby>口<rt>ぐち</rt></ruby>と<ruby>繋<rt>つな</rt></ruby>げることで、アイスクリーム<ruby>作<rt>づく</rt></ruby>りを<ruby>手伝<rt>てつだ</rt></ruby>ってくれます。
             ベルトコンベアの<ruby>端<rt>はし</rt></ruby>をクリックしたまま、<ruby>別<rt>べつ</rt></ruby>のベルトコンベアの<ruby>端<rt>はし</rt></ruby>まで<ruby>持<rt>も</rt></ruby>っていくことでつなげることができます。
             <ruby>配<rt>はい</rt></ruby><ruby>置<rt>ち</rt></ruby>した<ruby>人<rt>ひと</rt></ruby><ruby>々<rt>びと</rt></ruby>や、つなげた<ruby>経路<rt>けいろ</rt></ruby>はホバーして出てくる×ボタンで<ruby>消<rt>け</rt></ruby>すことができます。
+            また、ドラッグして<ruby>下<rt>した</rt></ruby>にある<ruby>元<rt>もと</rt></ruby>の<ruby>場<rt>ば</rt></ruby><ruby>所<rt>しょ</rt></ruby>にドロップすることでも<ruby>消<rt>け</rt></ruby>すことができます。
           </p>
           <div className="text-center mt-4">
-            <img src="/stage_screen.png" alt="ステージ画面の説明" className="inline-block w-128 h-64 mx-2" />
+            <img src="/stage_screen2.png" alt="ステージ画面の説明2" className="inline-block w-128 h-64 mx-2" />
           </div>
         </section>
       ),
@@ -105,7 +106,7 @@ export default function HowToPlay() {
             もし<ruby>失<rt>しっ</rt></ruby><ruby>敗<rt>ぱい</rt></ruby>してしまっても、<ruby>何<rt>なん</rt></ruby><ruby>度<rt>ど</rt></ruby>でもやり<ruby>直<rt>なお</rt></ruby>せます。
           </p>
           <div className="text-center mt-4">
-            <img src="/stage_screen.png" alt="ステージ画面の説明" className="inline-block w-128 h-64 mx-2" />
+            <img src="/stage_screen3.png" alt="ステージ画面の説明3" className="inline-block w-128 h-64 mx-2" />
           </div>
         </section>
       ),
@@ -117,10 +118,11 @@ export default function HowToPlay() {
           <h2 className="mb-3 text-xl font-bold text-gray-800">ステージ<ruby>画<rt>が</rt></ruby><ruby>面<rt>めん</rt></ruby>Ⅳ</h2>
           <p className="text-gray-700">
             <ruby>別<rt>べつ</rt></ruby>のステージで<ruby>遊<rt>あそ</rt></ruby>びたくなった<ruby>場<rt>ば</rt></ruby><ruby>合<rt>あい</rt></ruby>は、<ruby>左<rt>ひだり</rt></ruby><ruby>上<rt>うえ</rt></ruby>の「<ruby>戻<rt>もど</rt></ruby>る」ボタンを<ruby>押<rt>お</rt></ruby>してください。
-            ステージ<ruby>選<rt>せん</rt></ruby><ruby>択<rt>たく</rt></ruby><ruby>画<rt>が</rt></ruby><ruby>面<rt>めん</rt></ruby>に<ruby>戻<rt>もど</rt></ruby>ることができます。
+            ステージ<ruby>選<rt>せん</rt></ruby><ruby>択<rt>たく</rt></ruby><ruby>画<rt>が</rt></ruby><ruby>面<rt>めん</rt></ruby>に<ruby>戻<rt>もど</rt></ruby>ることができます。<br />
+            またクリアすると、<ruby>次<rt>つぎ</rt></ruby>のステージを<ruby>遊<rt>あそ</rt></ruby>ぶかステージ<ruby>選<rt>せん</rt></ruby><ruby>択<rt>たく</rt></ruby><ruby>画<rt>が</rt></ruby><ruby>面<rt>めん</rt></ruby>に<ruby>戻<rt>もど</rt></ruby>るかを<ruby>選<rt>えら</rt></ruby>ぶことができます
           </p>
           <div className="text-center mt-4">
-            <img src="/stage_screen.png" alt="ステージ画面の説明" className="inline-block w-128 h-64 mx-2" />
+            <img src="/stage_screen4.png" alt="ステージ画面の説明4" className="inline-block w-128 h-64 mx-2" />
           </div>
         </section>
       ),
@@ -167,7 +169,7 @@ export default function HowToPlay() {
                 <li>・ <ruby>桃<rt>もも</rt></ruby><ruby>色<rt>いろ</rt></ruby>：イチゴ</li>
               </ul>
               <p>
-                ただし、コーンの<ruby>上<rt>うえ</rt></ruby>にアイスが５<ruby>個<rt>こ</rt></ruby><ruby>以<rt>い</rt></ruby><ruby>上<rt>じょう</rt></ruby><ruby>載<rt>の</rt></ruby>っている<ruby>場<rt>ば</rt></ruby><ruby>合<rt>あい</rt></ruby>は、<ruby>新<rt>あらた</rt></ruby>しくアイスを<ruby>置<rt>お</rt></ruby>くことができません。
+                ただし、コーンの<ruby>上<rt>うえ</rt></ruby>にアイスが10<ruby>個<rt>こ</rt></ruby><ruby>以<rt>い</rt></ruby><ruby>上<rt>じょう</rt></ruby><ruby>載<rt>の</rt></ruby>っている<ruby>場<rt>ば</rt></ruby><ruby>合<rt>あい</rt></ruby>は、<ruby>新<rt>あらた</rt></ruby>しくアイスを<ruby>置<rt>お</rt></ruby>くことができません。
               </p>
             </div>
           </div>
