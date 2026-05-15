@@ -14,10 +14,10 @@ export default function HowToPlay() {
 
   const pages = [
     {
-      title: "ゲームの概要",
+      title: "ゲームの<ruby>概<rt>がい</rt></ruby><ruby>要<rt>よう</rt></ruby>",
       content: (
         <section className="w-full max-w-3xl rounded-xl border border-gray-200 bg-white/80 p-6 shadow-sm backdrop-blur">
-          <h2 className="mb-3 text-xl font-bold text-gray-800">ゲームの<ruby>概要<rt>がいよう</rt></ruby></h2>
+          <h2 className="mb-3 text-xl font-bold text-gray-800">ゲームの<ruby>概<rt>がい</rt></ruby><ruby>要<rt>よう</rt></ruby></h2>
           <p className="mb-3 text-gray-700">
             このゲームは、さまざまな<ruby>役割<rt>やくわり</rt></ruby>を<ruby>持<rt>も</rt></ruby>つ<ruby>人々<rt>ひとびと</rt></ruby>を<ruby>組<rt>く</rt></ruby>み<ruby>合<rt>あ</rt></ruby>わせて、お<ruby>題<rt>だい</rt></ruby>に<ruby>沿<rt>そ</rt></ruby>ったアイスクリームを<ruby>作<rt>つく</rt></ruby>るゲームです。
           </p>
