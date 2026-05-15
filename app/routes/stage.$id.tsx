@@ -357,6 +357,28 @@ function checkClear(
   return true;
 }
 
+function MessageBanner({
+  tone,
+  stacked,
+  children,
+}: {
+  tone: "fail" | "trial";
+  stacked?: boolean;
+  children: React.ReactNode;
+}) {
+  const colors =
+    tone === "fail"
+      ? "bg-red-200 border-red-500"
+      : "bg-yellow-200 border-yellow-500";
+  return (
+    <div
+      className={`absolute ${stacked ? "bottom-40" : "bottom-28"} right-6 z-40 ${colors} border-2 px-4 py-2 rounded font-[DotGothic16] text-gray-900`}
+    >
+      {children}
+    </div>
+  );
+}
+
 type AnimSegment = {
   stackAfter: Flavor[] | null;
   durationMs: number;
@@ -419,6 +441,7 @@ type AnimState = {
   transitCones: TransitCone[];
   virtualTime: number;
   lastRealTime: number | null;
+  isTrial: boolean;
 };
 
 const SPEED_OPTIONS = [
@@ -656,6 +679,7 @@ function StageInner({
   const [isClear, setIsClear] = useState(false);
   const [showClear, setShowClear] = useState(false);
   const [failMessage, setFailMessage] = useState<React.ReactNode>("");
+  const [trialMessage, setTrialMessage] = useState<React.ReactNode>("");
   const [isAnimating, setIsAnimating] = useState(false);
   const [flyingCones, setFlyingCones] = useState<FlyingConeRender[]>([]);
   const [takenBranchMap, setTakenBranchMap] = useState<
@@ -973,6 +997,7 @@ function StageInner({
     setIsClear(false);
     setShowClear(false);
     setFailMessage("");
+    setTrialMessage("");
     setIsAnimating(false);
     setFlyingCones([]);
     setTakenBranchMap(new Map());
@@ -1033,33 +1058,11 @@ function StageInner({
   const handleExecute = () => {
     if (isAnimating || isClear) return;
 
-    // Require all components to be placed before execution
-    if (remainedComponentIdxs.length > 0) {
-      setFailMessage(
-        <>
-          <ruby>
-            全員
-            <rt>ぜんいん</rt>
-          </ruby>
-          を
-          <ruby>
-            使<rt>つか</rt>
-          </ruby>
-          わないと
-          <ruby>
-            実行
-            <rt>じっこう</rt>
-          </ruby>
-          できません
-        </>,
-      );
-      return;
-    }
-
     const components = generateComponents(nodes, edges, stageData.components);
 
     const startEdge = edges.find((e) => e.source === "start");
     if (!startEdge) {
+      setTrialMessage("");
       setFailMessage(
         <>
           <ruby>
@@ -1084,6 +1087,7 @@ function StageInner({
 
     const firstNode = nodes.find((n) => n.id === startEdge.target);
     if (!firstNode || firstNode.id === "start") {
+      setTrialMessage("");
       setFailMessage(
         <>
           <ruby>
@@ -1107,19 +1111,16 @@ function StageInner({
 
     const firstComponentId = firstNode.data.componentIndex;
     const colors = Object.keys(stageData.mission) as ConeColor[];
-    // Ensure every placed node is reachable from the start
-    // components keys are component indexes for placed nodes
+
     const placedComponentIdxs = Object.keys(components).map((k) => Number(k));
-     const search: number[] = [firstComponentId];
-    const visited: number[] = [];
-    const visitedSet = new Set<number>();
+    const search: number[] = [firstComponentId];
+    const visited = new Set<number>();
 
     while (search.length > 0) {
       const current = search.shift();
-      if (current === undefined || visitedSet.has(current)) continue;
+      if (current === undefined || visited.has(current)) continue;
 
-      visitedSet.add(current);
-      visited.push(current);
+      visited.add(current);
 
       const node = components[current];
       if (!node) continue;
@@ -1128,9 +1129,8 @@ function StageInner({
       if (childIds == null) continue;
 
       const enqueue = (next: number | null) => {
-        if (next !== null && !visitedSet.has(next)) {
+        if (next !== null && !visited.has(next)) {
           search.push(next);
-          console.log("Enqueueing component index:", current, "→" ,next);
         }
       };
 
@@ -1142,28 +1142,41 @@ function StageInner({
       }
     }
 
-    if (placedComponentIdxs.length !== visitedSet.size) {
-      console.log("未到達の部品インデックス:", placedComponentIdxs.filter((i) => !visitedSet.has(i)));
-      setFailMessage(
-        <>
-          <ruby>
-            全員
-            <rt>ぜんいん</rt>
-          </ruby>
-          を
-          <ruby>
-            使<rt>つか</rt>
-          </ruby>
-          わないと
-          <ruby>
-            実行
-            <rt>じっこう</rt>
-          </ruby>
-          できません
-        </>,
-      );
-      return;
-    }
+    const allUsed = remainedComponentIdxs.length === 0;
+    const allReachable = placedComponentIdxs.length === visited.size;
+    const isTrial = !allUsed || !allReachable;
+
+    const trialReasonNode = (
+      <>
+        {!allUsed && (
+          <div>
+            <ruby>
+              使<rt>つか</rt>
+            </ruby>
+            っていない
+            <ruby>
+              部品
+              <rt>ぶひん</rt>
+            </ruby>
+            があります
+          </div>
+        )}
+        {!allReachable && (
+          <div>
+            <ruby>
+              始点
+              <rt>してん</rt>
+            </ruby>
+            とつながっていない
+            <ruby>
+              部品
+              <rt>ぶひん</rt>
+            </ruby>
+            があります
+          </div>
+        )}
+      </>
+    );
 
     const { result, traces } = icemake(
       colors,
@@ -1178,6 +1191,16 @@ function StageInner({
     }));
 
     setFailMessage("");
+    if (isTrial) {
+      setTrialMessage(
+        <>
+          {trialReasonNode}
+          <div>クリアにはなりません</div>
+        </>,
+      );
+    } else {
+      setTrialMessage("");
+    }
     setIsClear(false);
     setShowClear(false);
     setIsAnimating(true);
@@ -1193,6 +1216,7 @@ function StageInner({
       transitCones: [],
       virtualTime: 0,
       lastRealTime: null,
+      isTrial,
     };
 
     const loop = (timestamp: number) => {
@@ -1369,11 +1393,11 @@ function StageInner({
         anim.spawnQueue.length === 0 &&
         anim.transitCones.length === 0
       ) {
+        const wasTrial = anim.isTrial;
         resetAnimation();
-        if (checkClear(stageData.mission, anim.result)) {
-          setIsClear(true);
-          setShowClear(true);
-        } else {
+        const matched = checkClear(stageData.mission, anim.result);
+        if (!matched) {
+          setTrialMessage("");
           setFailMessage(
             <>
               <ruby>
@@ -1391,7 +1415,30 @@ function StageInner({
               してください。
             </>,
           );
+          return;
         }
+        if (wasTrial) {
+          setTrialMessage(
+            <>
+              <div>
+                お
+                <ruby>
+                  題<rt>だい</rt>
+                </ruby>
+                は
+                <ruby>
+                  満<rt>み</rt>
+                </ruby>
+                たしましたが
+              </div>
+              {trialReasonNode}
+              <div>クリアにはなりません</div>
+            </>,
+          );
+          return;
+        }
+        setIsClear(true);
+        setShowClear(true);
         return;
       }
 
@@ -1407,6 +1454,7 @@ function StageInner({
     setIsClear(false);
     setShowClear(false);
     setFailMessage("");
+    setTrialMessage("");
     navigate(path);
   };
 
@@ -1421,48 +1469,50 @@ function StageInner({
       className="w-full h-full bg-amber-100 flex flex-col overflow-hidden relative"
       ref={outerContainerRef}
     >
-      <div className="absolute top-2 left-2 z-20 flex items-start gap-4">
-        <button
-          type="button"
-          className="pixel-btn pixel-btn-small"
-          onClick={() => handleNavigate("/select-stage")}
-        >
-          ← もどる
-        </button>
-
-        {/* Mission display */}
-        <div className="bg-white/90 p-3 backdrop-blur-sm rounded-lg border-2 border-gray-300 shadow-lg text-gray-800">
-          <div className="flex items-start gap-4">
-            <div className="font-[DotGothic16] text-2xl shrink-0">
-              <ruby>
-                注文
-                <rt>ちゅうもん</rt>
-              </ruby>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              {(
-                Object.entries(stageData.mission) as [ConeColor, Flavor[]][]
-              ).map(([color, flavors]) => (
-                <div key={color} className="px-2 py-1 min-w-16">
-                  <div className="flex flex-col-reverse items-center">
-                    <img
-                      src={`/cone_${color}.png`}
-                      alt=""
-                      className="h-12 select-none"
-                    />
-                    {flavors.map((flavor, i) => (
-                      <img
-                        key={`${color}-${flavor}-${i}`}
-                        src={`/ice_${flavor}.png`}
-                        alt=""
-                        className="h-9 -mb-3 select-none"
-                        style={{ zIndex: i + 1 }}
-                      />
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
+      <div className="absolute top-2 left-2 z-20 bg-white/90 px-5 py-4 backdrop-blur-sm rounded-lg border-2 border-gray-300 shadow-lg text-gray-800">
+        <div className="flex items-center gap-8 mb-6">
+          <button
+            type="button"
+            className="pixel-btn pixel-btn-small"
+            onClick={() => handleNavigate("/select-stage")}
+          >
+            ← もどる
+          </button>
+          <div className="font-[DotGothic16] text-xl">
+            ステージ {stageId}
+          </div>
+        </div>
+        <div className="flex items-start gap-4">
+          <div className="font-[DotGothic16] text-2xl shrink-0">
+            <ruby>
+              注文
+              <rt>ちゅうもん</rt>
+            </ruby>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            {(
+              Object.entries(stageData.mission) as [ConeColor, Flavor[]][]
+            ).map(([color, flavors]) => (
+              <div
+                key={color}
+                className="flex flex-col-reverse items-center px-2 py-1 min-w-16"
+              >
+                <img
+                  src={`/cone_${color}.png`}
+                  alt=""
+                  className="h-12 select-none"
+                />
+                {flavors.map((flavor, i) => (
+                  <img
+                    key={`${color}-${flavor}-${i}`}
+                    src={`/ice_${flavor}.png`}
+                    alt=""
+                    className="h-9 -mb-3 select-none"
+                    style={{ zIndex: i + 1 }}
+                  />
+                ))}
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -1648,6 +1698,7 @@ function StageInner({
             className="pixel-btn pixel-btn-small pixel-btn-danger"
             onClick={() => {
               resetAnimation();
+              setTrialMessage("");
               setFailMessage(
                 <>
                   <ruby>
@@ -1720,11 +1771,12 @@ function StageInner({
         )}
       </div>
 
-      {/* Fail message */}
-      {failMessage && (
-        <div className="absolute bottom-20 right-6 z-40 bg-red-200 border-2 border-red-500 px-4 py-2 rounded font-[DotGothic16]">
-          {failMessage}
-        </div>
+      {failMessage && <MessageBanner tone="fail">{failMessage}</MessageBanner>}
+
+      {trialMessage && (
+        <MessageBanner tone="trial" stacked={!!failMessage}>
+          {trialMessage}
+        </MessageBanner>
       )}
 
       {/* Clear overlay */}
