@@ -292,6 +292,10 @@ export default function HowToPlay() {
               そして、アイスを<ruby>食<rt>た</rt></ruby>べてしまう<ruby>人<rt>ひと</rt></ruby>は、<ruby>配<rt>はい</rt></ruby><ruby>列<rt>れつ</rt></ruby>の<ruby>要<rt>よう</rt></ruby><ruby>素<rt>そ</rt></ruby>を<ruby>削<rt>さく</rt></ruby><ruby>除<rt>じょ</rt></ruby>する「pop」にあたります。<br />
             </p>
             <p>
+              このような<ruby>操<rt>そう</rt></ruby><ruby>作<rt>さ</rt></ruby>を<ruby>組<rt>く</rt></ruby>み<ruby>合<rt>あ</rt></ruby>わせて、プログラミングでいう<ruby>関<rt>かん</rt></ruby><ruby>数<rt>すう</rt></ruby>を<ruby>作<rt>さく</rt></ruby><ruby>成<rt>せい</rt></ruby>するゲームです。<br />
+              コーンが<ruby>入<rt>にゅう</rt></ruby><ruby>力<rt>りょく</rt></ruby>、<ruby>出<rt>で</rt></ruby><ruby>来<rt>き</rt></ruby><ruby>上<rt>あ</rt></ruby>がったアイスが<ruby>出<rt>しゅつ</rt></ruby><ruby>力<rt>りょく</rt></ruby>にあたります。<br />
+            </p>
+            <p>
               このゲームをプレイすることによって、プレイヤーが<ruby>配<rt>はい</rt></ruby><ruby>列<rt>れつ</rt></ruby>について<ruby>少<rt>すこ</rt></ruby>しでも<ruby>理<rt>り</rt></ruby><ruby>解<rt>かい</rt></ruby>したり、<ruby>配<rt>はい</rt></ruby><ruby>列<rt>れつ</rt></ruby>に<ruby>対<rt>たい</rt></ruby>して<ruby>親<rt>した</rt></ruby>しみを<ruby>持<rt>も</rt></ruby>っていただければ<ruby>幸<rt>さいわ</rt></ruby>いです。
             </p>
             <p>
