@@ -59,7 +59,7 @@ type AppNode = Node<{
   onDelete?: () => void;
 }>;
 
-const HANDLE_CLASS = "!w-3 !h-3 !bg-gray-500 !border-2 !border-gray-800";
+const HANDLE_CLASS = "!w-6 !h-6 !bg-white !border-2 !border-gray-800";
 
 function getComponentSrc(
   component: Component,
